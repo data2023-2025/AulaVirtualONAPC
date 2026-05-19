@@ -50,6 +50,7 @@
             font-weight: 500;
             font-size: 0.85rem;
             color: #1e40af;
+            transition: all 0.3s;
         }
         .role-btn.active {
             background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
@@ -72,6 +73,7 @@
             border-radius: 28px;
             font-size: 0.95rem;
             background: #fefcf5;
+            transition: all 0.3s;
         }
         .form-group input:focus {
             outline: none;
@@ -89,12 +91,27 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 8px;
+            transition: all 0.3s;
         }
         .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
-        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .error-msg {
             background: #fef2f2;
             color: #b91c1c;
+            padding: 12px;
+            border-radius: 28px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            display: none;
+        }
+        .error-msg a {
+            color: #b91c1c;
+            text-decoration: underline;
+        }
+        .success-msg {
+            background: #dcfce7;
+            color: #166534;
             padding: 12px;
             border-radius: 28px;
             margin-top: 20px;
@@ -122,6 +139,15 @@
             vertical-align: middle;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .info-note {
+            background: #eff6ff;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 16px;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -133,12 +159,12 @@
         <div class="login-body">
             <div class="role-buttons">
                 <button class="role-btn active" data-role="student">👨‍🎓 Estudiante</button>
-                <button class="role-btn" data-role="admin">👨‍🏫 Profesor</button>
+                <button class="role-btn" data-role="admin">👨‍🏫 Profesor/Admin</button>
             </div>
             <form id="loginForm">
                 <div class="form-group">
                     <label>📧 Correo Electrónico</label>
-                    <input type="email" id="email" placeholder="tu@email.com" required>
+                    <input type="email" id="email" placeholder="tu@email.com" required autocomplete="off">
                 </div>
                 <div class="form-group" id="passwordGroup" style="display: none;">
                     <label>🔒 Contraseña</label>
@@ -146,29 +172,167 @@
                 </div>
                 <button type="submit" class="login-btn" id="loginBtn">Ingresar al Aula</button>
                 <div class="error-msg" id="errorMsg"></div>
+                <div class="success-msg" id="successMsg"></div>
+                <div class="info-note" id="infoNote">
+                    ℹ️ Los estudiantes deben usar su correo institucional autorizado
+                </div>
             </form>
         </div>
         <div class="login-footer">
             <p>© 2025 AULA ONAPC - Todos los derechos reservados</p>
         </div>
     </div>
-    <script>
-        const ADMIN_EMAIL = 'data2023equidad@gmail.com';
-        const ADMIN_PASSWORD = '58ky8gu6';
-        let currentRole = 'student';
 
+    <script>
+        // ==================== LISTA DE CORREOS AUTORIZADOS ====================
+        // Estudiantes autorizados (lista blanca)
+        const STUDENT_WHITELIST = new Set([
+            // CARACAS DEM
+            'abogadosparticipacion2026@gmail.com',
+            // CARABOBO
+            'juvematosr@gmail.com',
+            // COJEDES
+            'opcregionalcojedes@gmail.com',
+            // PORTUGUESA GUANARE
+            'participacionc564@gmail.com',
+            // PORTUGUESA ACARIGUA
+            'participacionciudadanaacarigua@gmail.com',
+            // BARINAS
+            'orapc.bnas@gmail.com',
+            // ARAGUA
+            'participacionciudadanaestadoar@gmail.com',
+            // ANZOATEGUI BARCELONA
+            'orapc.anzoategui@gmail.com',
+            // ANZOATEGUI EL TIGRE
+            'oapceltigre27@gmail.com',
+            // CIUDAD BOLIVAR
+            'orapc.ciudadbolivar123@gmail.com',
+            // BOLIVAR PUERTO ORDAZ
+            'participacionciudadana940@gmail.com',
+            // OPC MONAGAS
+            'opcmonagas2023@gmail.com',
+            // NUEVA ESPARTA
+            'mariluescalante.11@gmail.com',
+            // DELTA AMACURO
+            'deltaparticipacionciudadana@gmail.com',
+            // SUCRE CUMANA
+            'orapc.sucre.cumana@gmail.com',
+            // AMAZONAS
+            'sanchezchristopher458@gmail.com',
+            // MIRANDA GUARENAS
+            'opc.guarenas@gmail.com',
+            // MIRANDA BARLOVENTO
+            'opc.extbatlovento@gmail.com',
+            // MIRANDA VALLES DEL TUY
+            'pcvallesdeltuy@gmail.com',
+            // MIRANDA LOS TEQUES
+            'pciudadanadarmiranda@gmail.com',
+            // TRUJILLO
+            'participacionciudadanadart2023@gmail.com',
+            // GUARICO
+            'herrera.diego7@gmail.com',
+            // LA GUAIRA
+            'participacioncdarlaguaira239@gmail.com',
+            // APURE
+            'orapc.apure.sanfdo@gmail.com',
+            // FALCON CORO
+            'orapcfalconcoro@gmail.com',
+            // PUNTO FIJO
+            'mataedglys@gmail.com',
+            // MERIDA EL VIGIA
+            'oraopcextelvigia@gmail.com',
+            // MERIDA LIBERTADOR
+            'oraopc.merida@gmail.com',
+            // MERIDA TOVAR
+            'orapc.ext.tovar@gmail.com',
+            // CARACAS
+            'orapc.caracas@gmail.com',
+            // LARA BARQUISIMETO
+            'aurateran1957@gmail.com',
+            // LARA CARORA
+            'estefanyaherrera.111@gmail.com',
+            // TACHIRA
+            'orapctachira2024@gmail.com',
+            // ZULIA MARACAIBO
+            'orapcmaracaibo@gmail.com',
+            // ZULIA TORREMARA
+            'opctorremara2026@gmail.com',
+            // YARACUY
+            'orapccjpyaracuy@gmail.com'
+        ]);
+        
+        // Administradores autorizados (email + contraseña específica)
+        const ADMIN_CREDENTIALS = {
+            'data2023equidad@gmail.com': '58ky8gu6',
+            'dem.corderom@gmail.com': '58ky8gu6'  // Misma contraseña
+        };
+        
+        let currentRole = 'student';
+        
+        // Función para normalizar emails (minúsculas, sin espacios)
+        function normalizeEmail(email) {
+            return email ? email.trim().toLowerCase() : '';
+        }
+        
+        // Verificar si un email está autorizado como estudiante
+        function isAuthorizedStudent(email) {
+            const normalizedEmail = normalizeEmail(email);
+            return STUDENT_WHITELIST.has(normalizedEmail);
+        }
+        
+        // Verificar si un email es administrador válido
+        function isValidAdmin(email, password) {
+            const normalizedEmail = normalizeEmail(email);
+            return ADMIN_CREDENTIALS[normalizedEmail] === password;
+        }
+        
+        // Mostrar mensaje de error
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
+            const successDiv = document.getElementById('successMsg');
+            successDiv.style.display = 'none';
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                if (errorDiv.style.display === 'block') {
+                    errorDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMsg');
+            successDiv.innerHTML = message;
+            successDiv.style.display = 'block';
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.style.display = 'none';
+        }
+        
+        // UI: cambiar entre roles
         document.querySelectorAll('.role-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentRole = this.getAttribute('data-role');
                 const pwdGroup = document.getElementById('passwordGroup');
-                pwdGroup.style.display = currentRole === 'admin' ? 'block' : 'none';
-                if (currentRole === 'student') document.getElementById('password').value = '';
+                const infoNote = document.getElementById('infoNote');
+                
+                if (currentRole === 'admin') {
+                    pwdGroup.style.display = 'block';
+                    infoNote.innerHTML = '🔐 Acceso restringido para administradores. Use sus credenciales.';
+                } else {
+                    pwdGroup.style.display = 'none';
+                    document.getElementById('password').value = '';
+                    infoNote.innerHTML = 'ℹ️ Los estudiantes deben usar su correo institucional autorizado. Si no está autorizado, contacte al administrador.';
+                }
                 document.getElementById('errorMsg').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'none';
             });
         });
-
+        
+        // Submit del formulario
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -176,50 +340,82 @@
             const errorDiv = document.getElementById('errorMsg');
             const loginBtn = document.getElementById('loginBtn');
             
+            // Validaciones básicas
             if (!email) {
-                errorDiv.textContent = 'Ingresa tu correo electrónico';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            if (currentRole === 'admin' && !password) {
-                errorDiv.textContent = 'Ingresa la contraseña';
-                errorDiv.style.display = 'block';
+                showError('✏️ Ingresa tu correo electrónico');
                 return;
             }
             
+            if (currentRole === 'admin') {
+                if (!password) {
+                    showError('✏️ Ingresa la contraseña');
+                    return;
+                }
+            }
+            
+            // Deshabilitar botón durante la verificación
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner"></span> Conectando...';
+            loginBtn.innerHTML = '<span class="spinner"></span> Verificando acceso...';
             errorDiv.style.display = 'none';
             
             setTimeout(() => {
                 if (currentRole === 'admin') {
-                    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                    // Verificar administrador
+                    if (isValidAdmin(email, password)) {
+                        showSuccess('✅ Acceso concedido. Redirigiendo al panel de administración...');
                         sessionStorage.setItem('adminSessionActive', 'true');
                         sessionStorage.setItem('adminSessionStart', Date.now().toString());
+                        sessionStorage.setItem('adminEmail', normalizeEmail(email));
                         sessionStorage.removeItem('studentEmail');
                         localStorage.removeItem('studentEmail');
-                        window.location.href = 'admin.html';
+                        setTimeout(() => {
+                            window.location.href = 'admin.html';
+                        }, 500);
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        errorDiv.textContent = 'Credenciales incorrectas';
-                        errorDiv.style.display = 'block';
+                        showError('❌ Acceso denegado. Correo o contraseña incorrectos.');
                     }
-                } else if (currentRole === 'student') {
-                    if (email && email.includes('@')) {
-                        sessionStorage.setItem('studentEmail', email);
-                        localStorage.setItem('studentEmail', email);
+                } 
+                else if (currentRole === 'student') {
+                    // Verificar estudiante autorizado
+                    if (isAuthorizedStudent(email)) {
+                        showSuccess('✅ Correo autorizado. Redirigiendo al aula virtual...');
+                        sessionStorage.setItem('studentEmail', normalizeEmail(email));
+                        localStorage.setItem('studentEmail', normalizeEmail(email));
                         sessionStorage.removeItem('adminSessionActive');
                         sessionStorage.removeItem('adminSessionStart');
-                        window.location.href = 'student.html';
+                        setTimeout(() => {
+                            window.location.href = 'student.html';
+                        }, 500);
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        errorDiv.textContent = 'Correo electrónico inválido';
-                        errorDiv.style.display = 'block';
+                        // Mostrar mensaje específico para correos no autorizados
+                        const emailDomain = email.split('@')[1];
+                        let sugerencia = '';
+                        if (emailDomain === 'gmail.com' || emailDomain === 'GMAIL.COM') {
+                            sugerencia = '<br><br>📧 Si crees que deberías tener acceso, contacta al administrador para agregar tu correo a la lista de autorizados.';
+                        }
+                        showError(`❌ Acceso denegado. El correo "${email}" no está autorizado para acceder como estudiante.${sugerencia}`);
                     }
                 }
-            }, 500);
+            }, 800);
+        });
+        
+        // Prevenir envío con Enter si está deshabilitado
+        document.getElementById('email').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginBtn').click();
+            }
+        });
+        
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('loginBtn').click();
+            }
         });
     </script>
 </body>
