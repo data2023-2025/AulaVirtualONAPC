@@ -61,9 +61,7 @@
             justify-content: center;
             align-items: center;
         }
-        .material-modal.active {
-            display: flex;
-        }
+        .material-modal.active { display: flex; }
         .modal-container {
             background: white;
             border-radius: 32px;
@@ -82,9 +80,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .modal-header h3 {
-            font-size: 1.2rem;
-        }
+        .modal-header h3 { font-size: 1.2rem; }
         .close-modal {
             background: none;
             border: none;
@@ -148,11 +144,7 @@
             margin-bottom: 16px;
             text-align: center;
         }
-        .file-info {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin-top: 4px;
-        }
+        .file-info { font-size: 0.85rem; color: #64748b; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -183,7 +175,6 @@
         </div>
     </div>
     
-    <!-- Modal para visualizar materiales -->
     <div id="materialModal" class="material-modal">
         <div class="modal-container">
             <div class="modal-header">
@@ -199,32 +190,34 @@
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
-        function updateClock() { 
-            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES'); 
+        // ============ CONFIGURACIÓN INICIAL ============
+        function updateClock() {
+            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES');
         }
-        updateClock(); 
+        updateClock();
         setInterval(updateClock, 1000);
         
-        function redirectToLogin() { 
-            window.location.href = 'index.html'; 
-        }
+        function redirectToLogin() { window.location.href = 'index.html'; }
         
-        (function() { 
-            if(!sessionStorage.getItem('studentEmail') && !localStorage.getItem('studentEmail')) redirectToLogin(); 
+        (function() {
+            if (!sessionStorage.getItem('studentEmail') && !localStorage.getItem('studentEmail')) redirectToLogin();
         })();
         
         let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
+        // Cargar datos
         let aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
         
         let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
         let progreso = progresoGeneral[email] || { sessions: [] };
-        let sesionActual = { 
-            sessionId: Date.now()+'_'+Math.random().toString(36).substr(2,6), 
-            sessionStart: new Date().toISOString(), 
-            sessionEnd: null, 
-            aulasVisited: [] 
+        
+        // Crear nueva sesión
+        let sesionActual = {
+            sessionId: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            sessionStart: new Date().toISOString(),
+            sessionEnd: null,
+            aulasVisited: []
         };
         progreso.sessions.push(sesionActual);
         
@@ -234,68 +227,149 @@
         }
         guardarProgresoGlobal();
         
-        let aulaActualId = null, timeout = null;
-        function debouncedSave() { 
-            if(timeout) clearTimeout(timeout); 
-            timeout = setTimeout(() => guardarProgresoGlobal(), 900); 
+        // Variables de seguimiento de tiempo
+        let aulaActualId = null;
+        let aulaEntryTime = null;
+        let materialActualId = null;
+        let materialEntryTime = null;
+        let heartbeatInterval = null;
+        
+        // Heartbeat: cada 30 segundos guarda el tiempo acumulado
+        function iniciarHeartbeat() {
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            heartbeatInterval = setInterval(() => {
+                guardarTiemposActuales();
+            }, 30000); // Cada 30 segundos
         }
         
-        function registrarEntradaAula(id, name) { 
-            if(aulaActualId) registrarSalidaAula(); 
-            aulaActualId = id; 
-            sesionActual.aulasVisited.push({ 
-                aulaId: id, 
-                aulaName: name, 
-                entryTime: new Date().toISOString(), 
-                exitTime: null, 
-                materialsViewed: [] 
-            }); 
-            debouncedSave(); 
+        function guardarTiemposActuales() {
+            // Guardar tiempo en aula actual
+            if (aulaActualId && aulaEntryTime) {
+                const visit = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
+                if (visit) {
+                    const tiempoActual = Date.now() - new Date(aulaEntryTime).getTime();
+                    visit.timeSpentMs = tiempoActual;
+                }
+            }
+            
+            // Guardar tiempo en material actual
+            if (materialActualId && materialEntryTime && aulaActualId) {
+                const visit = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
+                if (visit) {
+                    const material = visit.materialsViewed?.find(m => m.fileId === materialActualId);
+                    if (material) {
+                        const tiempoActual = Date.now() - new Date(materialEntryTime).getTime();
+                        material.timeSpentMs = tiempoActual;
+                    }
+                }
+            }
+            
+            guardarProgresoGlobal();
         }
         
-        function registrarSalidaAula() { 
-            let v = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime); 
-            if(v) v.exitTime = new Date().toISOString(); 
-            aulaActualId = null; 
-            debouncedSave(); 
+        function registrarEntradaAula(id, name) {
+            // Salir del aula anterior si existe
+            if (aulaActualId) registrarSalidaAula();
+            
+            aulaActualId = id;
+            aulaEntryTime = new Date();
+            
+            // Verificar si ya existe una visita a esta aula en la sesión actual sin salida
+            let visit = sesionActual.aulasVisited.find(v => v.aulaId === id && !v.exitTime);
+            if (!visit) {
+                visit = {
+                    aulaId: id,
+                    aulaName: name,
+                    entryTime: aulaEntryTime.toISOString(),
+                    exitTime: null,
+                    materialsViewed: [],
+                    timeSpentMs: 0
+                };
+                sesionActual.aulasVisited.push(visit);
+            } else {
+                // Reactivar visita existente
+                visit.entryTime = aulaEntryTime.toISOString();
+                visit.exitTime = null;
+            }
+            
+            guardarProgresoGlobal();
         }
         
-        function registrarVista(aulaId, fileId, title) { 
-            let v = sesionActual.aulasVisited.find(v => v.aulaId === aulaId && !v.exitTime); 
-            if(!v) { 
-                let a = aulas.find(a => a.id === aulaId); 
-                v = { 
-                    aulaId, 
-                    aulaName: a?.name, 
-                    entryTime: new Date().toISOString(), 
-                    exitTime: null, 
-                    materialsViewed: [] 
-                }; 
-                sesionActual.aulasVisited.push(v); 
-            } 
-            let m = v.materialsViewed.find(m => m.fileId === fileId); 
-            if(!m) { 
-                m = { 
-                    fileId, 
-                    fileTitle: title, 
-                    viewCount: 0, 
-                    firstView: new Date().toISOString(), 
-                    lastView: null 
-                }; 
-                v.materialsViewed.push(m); 
-            } 
-            m.viewCount++; 
-            m.lastView = new Date().toISOString(); 
-            debouncedSave(); 
+        function registrarSalidaAula() {
+            if (aulaActualId && aulaEntryTime) {
+                const visit = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
+                if (visit) {
+                    visit.exitTime = new Date().toISOString();
+                    visit.timeSpentMs = Date.now() - new Date(aulaEntryTime).getTime();
+                }
+            }
+            aulaActualId = null;
+            aulaEntryTime = null;
+            guardarProgresoGlobal();
         }
         
-        function escapar(t) { 
-            return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; 
+        function registrarInicioMaterial(aulaId, fileId, title) {
+            // Cerrar material anterior
+            if (materialActualId) registrarFinMaterial();
+            
+            materialActualId = fileId;
+            materialEntryTime = new Date();
+            
+            // Buscar o crear la visita al aula
+            let visit = sesionActual.aulasVisited.find(v => v.aulaId === aulaId && !v.exitTime);
+            if (!visit) {
+                const aula = aulas.find(a => a.id === aulaId);
+                visit = {
+                    aulaId: aulaId,
+                    aulaName: aula?.name || 'Aula',
+                    entryTime: new Date().toISOString(),
+                    exitTime: null,
+                    materialsViewed: [],
+                    timeSpentMs: 0
+                };
+                sesionActual.aulasVisited.push(visit);
+            }
+            
+            // Registrar o actualizar material
+            let material = visit.materialsViewed?.find(m => m.fileId === fileId);
+            if (!material) {
+                material = {
+                    fileId: fileId,
+                    fileTitle: title,
+                    viewCount: 0,
+                    firstView: null,
+                    lastView: null,
+                    timeSpentMs: 0
+                };
+                if (!visit.materialsViewed) visit.materialsViewed = [];
+                visit.materialsViewed.push(material);
+            }
+            
+            material.viewCount++;
+            if (!material.firstView) material.firstView = materialEntryTime.toISOString();
+            material.lastView = materialEntryTime.toISOString();
+            
+            guardarProgresoGlobal();
         }
         
-        // Función mejorada para obtener ID de Google Drive desde cualquier tipo de URL
+        function registrarFinMaterial() {
+            if (materialActualId && materialEntryTime && aulaActualId) {
+                const visit = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
+                if (visit && visit.materialsViewed) {
+                    const material = visit.materialsViewed.find(m => m.fileId === materialActualId);
+                    if (material) {
+                        const tiempoVisto = Date.now() - new Date(materialEntryTime).getTime();
+                        material.timeSpentMs = (material.timeSpentMs || 0) + tiempoVisto;
+                    }
+                }
+            }
+            materialActualId = null;
+            materialEntryTime = null;
+            guardarProgresoGlobal();
+        }
+        
+        // ============ VISOR DE MATERIALES ============
         function getGoogleDriveId(url) {
-            // Patrones de URLs de Google Drive
             const patterns = [
                 /\/file\/d\/([a-zA-Z0-9_-]+)/,
                 /id=([a-zA-Z0-9_-]+)/,
@@ -303,7 +377,6 @@
                 /uc\?id=([a-zA-Z0-9_-]+)/,
                 /open\?id=([a-zA-Z0-9_-]+)/
             ];
-            
             for (const pattern of patterns) {
                 const match = url.match(pattern);
                 if (match && match[1]) return match[1];
@@ -311,38 +384,35 @@
             return null;
         }
         
-        // Determinar el tipo de archivo por su URL
         function getFileType(url) {
             const driveId = getGoogleDriveId(url);
             if (driveId) return 'google-drive';
-            
             const urlLower = url.toLowerCase();
             if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
             if (urlLower.includes('vimeo.com')) return 'vimeo';
             if (urlLower.endsWith('.pdf')) return 'pdf';
             if (urlLower.endsWith('.mp4') || urlLower.endsWith('.webm') || urlLower.endsWith('.mov')) return 'video-directo';
             if (urlLower.match(/\.(ppt|pptx|doc|docx|xls|xlsx)$/)) return 'office';
-            
             return 'unknown';
         }
         
-        // Generar HTML para visualizar el contenido
         function generarVisorMaterial(title, url) {
             const type = getFileType(url);
             const driveId = getGoogleDriveId(url);
             
-            switch(type) {
+            switch (type) {
                 case 'youtube':
-                    // Extraer ID de YouTube
                     let youtubeId = '';
-                    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/);
+                    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\&\?]+)/);
                     if (ytMatch) youtubeId = ytMatch[1];
                     return `
                         <div class="video-container">
                             <iframe src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allowfullscreen></iframe>
                         </div>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" target="_blank">📺 Abrir en YouTube</a>
+                        </div>
                     `;
-                    
                 case 'vimeo':
                     const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
                     const vimeoId = vimeoMatch ? vimeoMatch[1] : '';
@@ -351,76 +421,42 @@
                             <iframe src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen></iframe>
                         </div>
                     `;
-                    
                 case 'google-drive':
                     if (driveId) {
-                        // Intentamos vista previa embebida
                         return `
                             <div class="video-container">
                                 <iframe src="https://drive.google.com/file/d/${driveId}/preview" frameborder="0" allowfullscreen></iframe>
                             </div>
                             <div class="download-option">
-                                <p>⚠️ Si el archivo no se visualiza correctamente (archivos muy grandes), puedes descargarlo:</p>
+                                <p>⚠️ Si el archivo no se visualiza (archivos muy grandes), puedes descargarlo:</p>
                                 <a href="https://drive.google.com/uc?export=download&id=${driveId}" class="download-btn" target="_blank">⬇️ Descargar archivo</a>
                             </div>
                         `;
                     }
-                    return `
-                        <div class="warning-message">
-                            ⚠️ No se pudo procesar el enlace de Google Drive. Verifica la URL.
-                        </div>
-                        <div class="download-option">
-                            <a href="${url}" class="download-btn" target="_blank">📥 Abrir en Google Drive</a>
-                        </div>
-                    `;
-                    
+                    return `<div class="warning-message">⚠️ No se pudo procesar el enlace de Google Drive.</div>
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">📥 Abrir en Google Drive</a></div>`;
                 case 'pdf':
-                    return `
-                        <iframe class="pdf-viewer" src="${url}" frameborder="0"></iframe>
-                        <div class="download-option">
-                            <a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar PDF</a>
-                        </div>
-                    `;
-                    
+                    return `<iframe class="pdf-viewer" src="${url}" frameborder="0"></iframe>
+                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar PDF</a></div>`;
                 case 'video-directo':
-                    return `
-                        <div class="video-container">
-                            <video controls autoplay>
-                                <source src="${url}" type="video/mp4">
-                                Tu navegador no soporta el elemento de video.
-                            </video>
-                        </div>
-                        <div class="download-option">
-                            <a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar video</a>
-                        </div>
-                    `;
-                    
+                    return `<div class="video-container"><video controls autoplay><source src="${url}" type="video/mp4">Tu navegador no soporta video.</video></div>
+                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar video</a></div>`;
                 case 'office':
-                    // Usar el visor de Microsoft Office Online
                     const encodedUrl = encodeURIComponent(url);
-                    return `
-                        <iframe class="pdf-viewer" src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" frameborder="0"></iframe>
-                        <div class="download-option">
-                            <a href="${url}" class="download-btn" target="_blank">📥 Abrir documento</a>
-                        </div>
-                    `;
-                    
+                    return `<iframe class="pdf-viewer" src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" frameborder="0"></iframe>
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">📥 Abrir documento</a></div>`;
                 default:
-                    return `
-                        <div class="warning-message">
-                            ⚠️ No se puede visualizar este tipo de archivo automáticamente.
-                        </div>
-                        <div class="download-option">
-                            <a href="${url}" class="download-btn" target="_blank">🔗 Abrir enlace</a>
-                        </div>
-                    `;
+                    return `<div class="warning-message">⚠️ No se puede visualizar este tipo de archivo automáticamente.</div>
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">🔗 Abrir enlace</a></div>`;
             }
         }
         
-        function abrirMaterial(aulaId, fileId, title, url) { 
-            registrarVista(aulaId, fileId, title);
+        let modalOpen = false;
+        
+        function abrirMaterial(aulaId, fileId, title, url) {
+            registrarInicioMaterial(aulaId, fileId, title);
+            modalOpen = true;
             
-            // Mostrar modal con el visor
             const modal = document.getElementById('materialModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalContent = document.getElementById('modalContent');
@@ -431,90 +467,96 @@
         }
         
         function cerrarModal() {
+            registrarFinMaterial();
+            modalOpen = false;
             const modal = document.getElementById('materialModal');
             modal.classList.remove('active');
             document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:40px;">Cargando contenido...</div>';
         }
         
+        // ============ RENDERIZADO ============
+        function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        
         function renderizarAulas() {
             let html = '';
-            aulas.forEach(a => { 
-                let visit = sesionActual.aulasVisited.find(v => v.aulaId === a.id); 
-                let vistos = visit?.materialsViewed?.length || 0; 
-                let total = a.files?.length || 0; 
-                let pct = total ? (vistos/total)*100 : 0; 
+            aulas.forEach(a => {
+                let visit = sesionActual.aulasVisited.find(v => v.aulaId === a.id);
+                let vistos = visit?.materialsViewed?.length || 0;
+                let total = a.files?.length || 0;
+                let pct = total ? (vistos / total) * 100 : 0;
                 html += `<div class="aula-card" onclick="entrarAula('${a.id}')">
                             <div class="aula-header"><h3>${escapar(a.name)}</h3></div>
                             <div class="aula-body">
                                 <div>📄 ${total} materiales | 👁️ ${vistos} vistos</div>
                                 <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
                             </div>
-                         </div>`; 
+                         </div>`;
             });
             document.getElementById('aulasList').innerHTML = html || '<div class="empty-state">📭 No hay aulas disponibles</div>';
         }
         
-        function renderizarArchivos(id) { 
-            let a = aulas.find(a => a.id === id); 
-            let html = ''; 
+        function renderizarArchivos(id) {
+            let a = aulas.find(a => a.id === id);
+            let html = '';
             if (!a || !a.files?.length) {
-                html = '<div class="empty-state">📭 Este aula aún no tiene materiales</div>';
+                html = '<div class="empty-state">📭 Esta aula aún no tiene materiales</div>';
             } else {
-                a.files.forEach(f => { 
+                a.files.forEach(f => {
                     html += `<div class="file-item">
                                 <div>
                                     <strong>${escapar(f.title)}</strong>
                                     <div class="file-info">📎 ${f.url.substring(0, 60)}${f.url.length > 60 ? '...' : ''}</div>
                                 </div>
                                 <button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver / Estudiar</button>
-                             </div>`; 
+                             </div>`;
                 });
             }
-            document.getElementById('filesList').innerHTML = html; 
+            document.getElementById('filesList').innerHTML = html;
         }
         
-        function entrarAula(id) { 
-            let a = aulas.find(a => a.id === id); 
-            if(a) { 
-                registrarEntradaAula(id, a.name); 
-                document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(a.name)}`; 
-                document.getElementById('aulasView').style.display = 'none'; 
-                document.getElementById('filesView').style.display = 'block'; 
-                renderizarArchivos(id); 
-            } 
+        function entrarAula(id) {
+            let a = aulas.find(a => a.id === id);
+            if (a) {
+                registrarEntradaAula(id, a.name);
+                document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(a.name)}`;
+                document.getElementById('aulasView').style.display = 'none';
+                document.getElementById('filesView').style.display = 'block';
+                renderizarArchivos(id);
+            }
         }
         
-        function volverAulas() { 
-            registrarSalidaAula(); 
-            document.getElementById('aulasView').style.display = 'block'; 
-            document.getElementById('filesView').style.display = 'none'; 
-            renderizarAulas(); 
+        function volverAulas() {
+            registrarSalidaAula();
+            document.getElementById('aulasView').style.display = 'block';
+            document.getElementById('filesView').style.display = 'none';
+            renderizarAulas();
         }
         
-        function logout() { 
-            registrarSalidaAula(); 
-            sesionActual.sessionEnd = new Date().toISOString(); 
-            guardarProgresoGlobal(); 
-            sessionStorage.clear(); 
-            localStorage.removeItem('studentEmail'); 
-            window.location.href = 'index.html'; 
+        function logout() {
+            registrarSalidaAula();
+            if (modalOpen) cerrarModal();
+            sesionActual.sessionEnd = new Date().toISOString();
+            guardarProgresoGlobal();
+            sessionStorage.clear();
+            localStorage.removeItem('studentEmail');
+            window.location.href = 'index.html';
         }
         
-        window.addEventListener('beforeunload', () => { 
-            if(sesionActual) { 
-                registrarSalidaAula(); 
-                sesionActual.sessionEnd = new Date().toISOString(); 
-                guardarProgresoGlobal(); 
-            } 
-        });
-        
-        // Cerrar modal con ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cerrarModal();
+        window.addEventListener('beforeunload', () => {
+            if (sesionActual) {
+                registrarSalidaAula();
+                if (modalOpen) registrarFinMaterial();
+                sesionActual.sessionEnd = new Date().toISOString();
+                guardarProgresoGlobal();
             }
         });
         
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarModal();
+        });
+        
+        // Iniciar heartbeat y renderizar
+        iniciarHeartbeat();
         renderizarAulas();
         setTimeout(() => document.getElementById('initialLoader').style.display = 'none', 800);
     </script>
