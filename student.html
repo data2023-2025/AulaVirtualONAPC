@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Mi Aula Virtual</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -17,36 +12,19 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-repeat: no-repeat;
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             min-height: 100vh;
-            position: relative;
-        }
-
-        /* Fondo completamente transparente */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.00);
-            z-index: 0;
-            pointer-events: none;
         }
 
         .navbar {
-            position: relative;
-            z-index: 1;
             background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             padding: 14px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             border-bottom: 2px solid #3b82f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .navbar h2 { font-size: 1.25rem; font-weight: 600; color: #1e40af; }
@@ -60,7 +38,6 @@
             border-radius: 40px;
             color: #1e40af;
             border: 1px solid #bfdbfe;
-            letter-spacing: 1px;
         }
         
         .logout-btn {
@@ -83,8 +60,6 @@
         }
 
         .container {
-            position: relative;
-            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
             padding: 28px;
@@ -96,7 +71,6 @@
             padding: 28px 32px;
             border-radius: 32px;
             margin-bottom: 32px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .welcome h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 6px; }
         .welcome p { font-size: 0.85rem; opacity: 0.9; }
@@ -134,7 +108,6 @@
             align-items: center; 
             flex-wrap: wrap;
             gap: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04); 
             border: 1px solid #e2e8f0;
         }
         .file-item div strong { font-size: 0.95rem; font-weight: 600; color: #1e293b; }
@@ -148,7 +121,6 @@
             cursor: pointer; 
             font-weight: 500; 
             font-size: 0.85rem;
-            transition: 0.2s;
         }
         .view-btn:hover { transform: scale(1.02); }
 
@@ -161,7 +133,6 @@
             cursor: pointer; 
             margin-bottom: 24px; 
             font-weight: 500;
-            font-size: 0.85rem;
         }
 
         .empty-state { 
@@ -171,7 +142,6 @@
             border-radius: 32px; 
             color: #64748b; 
             border: 1px solid #e2e8f0;
-            font-size: 0.9rem;
         }
 
         .loader {
@@ -207,12 +177,6 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
-        @media (max-width: 720px) { 
-            .container { padding: 20px; } 
-            .welcome { padding: 24px; } 
-            .welcome h1 { font-size: 1.3rem; } 
-        }
     </style>
 </head>
 <body>
@@ -228,6 +192,7 @@
             <button class="logout-btn" onclick="logout()">🚪 Salir</button>
         </div>
     </div>
+    
     <div class="container">
         <div class="welcome">
             <h1>Bienvenido a tu Aula Virtual</h1>
@@ -236,60 +201,40 @@
         <div id="aulasView"><div id="aulasList" class="aulas-grid"></div></div>
         <div id="filesView" style="display: none;">
             <button class="back-btn" onclick="volverAulas()">← Volver a mis aulas</button>
-            <h2 id="aulaTitle" style="margin-bottom: 20px; color: #1e40af; font-size: 1.3rem; font-weight: 600;"></h2>
+            <h2 id="aulaTitle" style="margin-bottom: 20px; color: #1e40af;"></h2>
             <div id="filesList" class="files-list"></div>
         </div>
     </div>
     <div id="loader" class="loader"><div class="spinner"></div></div>
 
     <script>
-        // =============================================
-        // RELOJ EN TIEMPO REAL
-        // =============================================
+        // Reloj
         function updateClock() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
             const clockElement = document.getElementById('realTimeClock');
             if (clockElement) {
-                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+                clockElement.textContent = now.toLocaleTimeString('es-ES');
             }
         }
         updateClock();
         setInterval(updateClock, 1000);
-        
-        // =============================================
-        // VERIFICACIÓN DE AUTENTICACIÓN - ESTUDIANTE
-        // =============================================
-        
-        // Función para obtener la URL base (sin parámetros)
+
         function getBaseUrl() {
-            const currentUrl = window.location.href;
-            // Remover parámetros de query
-            return currentUrl.split('?')[0];
+            return window.location.href.split('?')[0];
         }
-        
+
         function redirectToLogin() {
             window.location.replace(getBaseUrl() + '?path=index');
         }
-        
-        function hideInitialLoader() {
-            const loader = document.getElementById('initialLoader');
-            if (loader) loader.style.display = 'none';
-        }
-        
-        // Función para mostrar mensajes con el formato "AULA ONAPC dice:"
-        function showMessage(message, isError = true) {
+
+        function showMessage(message) {
             alert('AULA ONAPC dice:\n' + message);
         }
-        
-        (function verificarSesionEstudiante() {
+
+        // Verificar sesión
+        (function verificarSesion() {
             const studentEmail = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
-            if (!studentEmail) {
-                redirectToLogin();
-                return;
-            }
+            if (!studentEmail) redirectToLogin();
         })();
 
         let aulas = [];
@@ -297,12 +242,21 @@
         let progresoActual = null;
         let sesionActual = null;
         let aulaActualId = null;
-        let tiempoEntradaAula = null;
         let timeoutGuardar = null;
 
-        function mostrarLoader(show) { const el = document.getElementById('loader'); if (show) el.classList.add('show'); else el.classList.remove('show'); }
-        function generarId() { return Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
-        function escapar(t) { if(!t) return ''; return t.replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
+        function mostrarLoader(show) { 
+            const el = document.getElementById('loader'); 
+            show ? el.classList.add('show') : el.classList.remove('show'); 
+        }
+
+        function generarId() { 
+            return Date.now() + '_' + Math.random().toString(36).substr(2, 9); 
+        }
+
+        function escapar(texto) { 
+            if(!texto) return ''; 
+            return texto.replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); 
+        }
 
         function obtenerEmail() {
             let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
@@ -317,57 +271,45 @@
             return email;
         }
 
-        function cargarAulas() { 
-            return new Promise((resolve, reject) => { 
-                google.script.run.withSuccessHandler(res => resolve(res.success ? (res.data||[]) : [])).withFailureHandler(reject).getAulas(); 
-            }); 
-        }
-        
-        function cargarProgreso(email) { 
-            return new Promise((resolve, reject) => { 
-                google.script.run.withSuccessHandler(res => resolve(res.success ? (res.data||{sessions:[]}) : {sessions:[]})).withFailureHandler(reject).getProgress(email); 
-            }); 
-        }
-        
         function guardarProgreso(email, prog) { 
             return new Promise((resolve, reject) => { 
-                google.script.run.withSuccessHandler(res => resolve()).withFailureHandler(reject).saveProgress(email, prog); 
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    .saveProgress(email, prog); 
             }); 
         }
 
         function guardarProgresoDebounced() { 
             if(timeoutGuardar) clearTimeout(timeoutGuardar); 
             timeoutGuardar = setTimeout(() => { 
-                if(emailEstudiante && progresoActual) guardarProgreso(emailEstudiante, progresoActual).catch(e=>console.warn(e)); 
+                if(emailEstudiante && progresoActual) {
+                    guardarProgreso(emailEstudiante, progresoActual).catch(e => console.warn(e)); 
+                }
             }, 900); 
         }
 
-        async function iniciarSesion() {
-            progresoActual = { sessions: [] };
-            sesionActual = { sessionId: generarId(), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] };
-            progresoActual.sessions.push(sesionActual);
-            await guardarProgreso(emailEstudiante, progresoActual);
-        }
-
         function registrarEntradaAula(aulaId, aulaName) {
-            if(aulaActualId && tiempoEntradaAula) registrarSalidaAula();
+            if(aulaActualId) registrarSalidaAula();
             aulaActualId = aulaId;
-            tiempoEntradaAula = Date.now();
-            const aulaActivity = { aulaId, aulaName, entryTime: new Date().toISOString(), exitTime: null, durationMs: 0, materialsViewed: [] };
+            const aulaActivity = { 
+                aulaId, 
+                aulaName, 
+                entryTime: new Date().toISOString(), 
+                exitTime: null, 
+                materialsViewed: [] 
+            };
             sesionActual.aulasVisited.push(aulaActivity);
             guardarProgresoDebounced();
         }
         
         function registrarSalidaAula() {
-            if(!aulaActualId || !tiempoEntradaAula) return;
-            const duracion = Date.now() - tiempoEntradaAula;
+            if(!aulaActualId) return;
             const visita = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
             if(visita) { 
                 visita.exitTime = new Date().toISOString(); 
-                visita.durationMs = (visita.durationMs||0) + duracion; 
             }
-            aulaActualId = null; 
-            tiempoEntradaAula = null;
+            aulaActualId = null;
             guardarProgresoDebounced();
         }
         
@@ -375,12 +317,18 @@
             let aulaVisit = sesionActual.aulasVisited.find(v => v.aulaId === aulaId && !v.exitTime);
             if(!aulaVisit) { 
                 const aula = aulas.find(a=>a.id===aulaId); 
-                aulaVisit = { aulaId, aulaName: aula?.name||'Desconocido', entryTime: new Date().toISOString(), exitTime: null, durationMs:0, materialsViewed:[] }; 
+                aulaVisit = { 
+                    aulaId, 
+                    aulaName: aula?.name || 'Desconocido', 
+                    entryTime: new Date().toISOString(), 
+                    exitTime: null, 
+                    materialsViewed: [] 
+                }; 
                 sesionActual.aulasVisited.push(aulaVisit); 
             }
             let material = aulaVisit.materialsViewed.find(m => m.fileId === fileId);
             if(!material) { 
-                material = { fileId, fileTitle, viewCount:0, firstView: new Date().toISOString(), lastView:null }; 
+                material = { fileId, fileTitle, viewCount: 0, firstView: new Date().toISOString(), lastView: null }; 
                 aulaVisit.materialsViewed.push(material); 
             }
             material.viewCount++; 
@@ -396,9 +344,9 @@
             }
             let html = '';
             aulas.forEach(aula => {
-                const total = aula.files?.length||0;
+                const total = aula.files?.length || 0;
                 const visit = sesionActual?.aulasVisited?.find(v=>v.aulaId===aula.id);
-                const vistos = visit?.materialsViewed?.length||0;
+                const vistos = visit?.materialsViewed?.length || 0;
                 const pct = total ? (vistos/total)*100 : 0;
                 html += `<div class="aula-card" onclick="entrarAula('${aula.id}')">
                             <div class="aula-header"><h3>${escapar(aula.name)}</h3></div>
@@ -474,6 +422,7 @@
             } 
         });
 
+        // Inicialización
         (async function init() {
             emailEstudiante = obtenerEmail();
             if(!emailEstudiante) { 
@@ -482,41 +431,36 @@
             }
             document.getElementById('studentEmailDisplay').innerText = escapar(emailEstudiante);
             
-            try {
-                google.script.run.withSuccessHandler(async (res) => {
-                    try {
-                        if (res && res.success) {
-                            aulas = res.aulas || [];
-                            progresoActual = res.progress || { sessions: [] };
-                            
-                            if (!progresoActual.sessions) progresoActual.sessions = [];
-                            
-                            sesionActual = { sessionId: generarId(), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] }; 
-                            progresoActual.sessions.push(sesionActual); 
-                            await guardarProgreso(emailEstudiante, progresoActual); 
-                            
-                            renderizarAulas();
-                            hideInitialLoader();
-                        } else {
-                            showMessage('Error: ' + (res ? res.error : 'No hay respuesta'));
-                            hideInitialLoader();
-                        }
-                    } catch (innerError) {
-                        console.error('Error procesando datos:', innerError);
-                        hideInitialLoader();
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res && res.success) {
+                        aulas = res.aulas || [];
+                        progresoActual = res.progress || { sessions: [] };
+                        
+                        if (!progresoActual.sessions) progresoActual.sessions = [];
+                        
+                        sesionActual = { 
+                            sessionId: generarId(), 
+                            sessionStart: new Date().toISOString(), 
+                            sessionEnd: null, 
+                            aulasVisited: [] 
+                        }; 
+                        progresoActual.sessions.push(sesionActual); 
+                        guardarProgreso(emailEstudiante, progresoActual); 
+                        
+                        renderizarAulas();
+                        document.getElementById('initialLoader').style.display = 'none';
+                    } else {
+                        showMessage('Error: ' + (res ? res.error : 'No hay respuesta'));
+                        document.getElementById('initialLoader').style.display = 'none';
                     }
-                }).withFailureHandler(err => {
-                    console.error('Error de red:', err);
-                    hideInitialLoader();
-                    showMessage('No se pudo conectar con el servidor. Por favor, recarga la página.');
-                }).getStudentInitialData(emailEstudiante);
-            } catch(e) { 
-                console.error(e); 
-                showMessage('Error al cargar datos: ' + e.message);
-                setTimeout(function() {
-                    redirectToLogin();
-                }, 2000);
-            }
+                })
+                .withFailureHandler(function(err) {
+                    console.error('Error:', err);
+                    document.getElementById('initialLoader').style.display = 'none';
+                    showMessage('No se pudo conectar con el servidor');
+                })
+                .getStudentInitialData(emailEstudiante);
         })();
     </script>
 </body>
