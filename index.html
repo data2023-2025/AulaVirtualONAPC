@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Acceso</title>
+    <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self'; font-src 'self' data:;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -154,7 +156,7 @@
     <div class="login-container">
         <div class="login-header">
             <h1>📚 AULA ONAPC</h1>
-            <p>JUNTOS PARA APOYAR LA JUSTICIA CON CORAZÓN</p>
+            <p>Plataforma educativa profesional</p>
         </div>
         <div class="login-body">
             <div class="role-buttons">
@@ -261,17 +263,71 @@
             'orapccjpyaracuy@gmail.com'
         ]);
         
+        // ==================== SISTEMA DE SEGURIDAD ====================
+        
         // Administradores autorizados (email + contraseña específica)
+        // ⚠️ NOTA DE SEGURIDAD: En producción, esto debe estar en un servidor backend con autenticación JWT
         const ADMIN_CREDENTIALS = {
             'data2023equidad@gmail.com': '58ky8gu6',
             'dem.corderom@gmail.com': 'cordem2*26'  // Misma contraseña
         };
         
         let currentRole = 'student';
+        let loginAttempts = 0;
+        const MAX_LOGIN_ATTEMPTS = 5;
+        let lockoutTime = null;
         
         // Función para normalizar emails (minúsculas, sin espacios)
         function normalizeEmail(email) {
             return email ? email.trim().toLowerCase() : '';
+        }
+        
+        // Validación de email con seguridad mejorada
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                return false;
+            }
+            // Prevenir emails potencialmente peligrosos
+            const dangerousPatterns = [
+                /<script/i,
+                /javascript:/i,
+                /data:/i,
+                /vbscript:/i,
+                /onload/i,
+                /onerror/i
+            ];
+            
+            for (const pattern of dangerousPatterns) {
+                if (pattern.test(email)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        // Sistema de prevención de ataques de fuerza bruta
+        function checkLoginLockout() {
+            if (lockoutTime && Date.now() < lockoutTime) {
+                const remainingTime = Math.ceil((lockoutTime - Date.now()) / 1000);
+                return remainingTime;
+            }
+            return null;
+        }
+        
+        function recordFailedLogin() {
+            loginAttempts++;
+            if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+                lockoutTime = Date.now() + (15 * 60 * 1000); // 15 minutos de bloqueo
+                loginAttempts = 0;
+                return true;
+            }
+            return false;
+        }
+        
+        function resetLoginAttempts() {
+            loginAttempts = 0;
+            lockoutTime = null;
         }
         
         // Verificar si un email está autorizado como estudiante
@@ -340,15 +396,33 @@
             const errorDiv = document.getElementById('errorMsg');
             const loginBtn = document.getElementById('loginBtn');
             
-            // Validaciones básicas
+            // Verificar bloqueo por intentos fallidos
+            const lockoutRemaining = checkLoginLockout();
+            if (lockoutRemaining) {
+                const minutes = Math.floor(lockoutRemaining / 60);
+                const seconds = lockoutRemaining % 60;
+                showError(`🔒 Demasiados intentos fallidos. Intenta de nuevo en ${minutes}m ${seconds}s.`);
+                return;
+            }
+            
+            // Validaciones mejoradas
             if (!email) {
                 showError('✏️ Ingresa tu correo electrónico');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showError('❌ Formato de correo electrónico inválido');
                 return;
             }
             
             if (currentRole === 'admin') {
                 if (!password) {
                     showError('✏️ Ingresa la contraseña');
+                    return;
+                }
+                if (password.length < 6) {
+                    showError('❌ La contraseña debe tener al menos 6 caracteres');
                     return;
                 }
             }
@@ -362,7 +436,9 @@
                 if (currentRole === 'admin') {
                     // Verificar administrador
                     if (isValidAdmin(email, password)) {
+                        resetLoginAttempts();
                         showSuccess('✅ Acceso concedido. Redirigiendo al panel de administración...');
+                        // Usar sessionStorage para seguridad (se limpia al cerrar navegador)
                         sessionStorage.setItem('adminSessionActive', 'true');
                         sessionStorage.setItem('adminSessionStart', Date.now().toString());
                         sessionStorage.setItem('adminEmail', normalizeEmail(email));
@@ -374,12 +450,19 @@
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        showError('❌ Acceso denegado. Correo o contraseña incorrectos.');
+                        const isLocked = recordFailedLogin();
+                        if (isLocked) {
+                            showError('🔒 Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.');
+                        } else {
+                            const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
+                            showError(`❌ Acceso denegado. Correo o contraseña incorrectos. ${attemptsLeft} intentos restantes.`);
+                        }
                     }
                 } 
                 else if (currentRole === 'student') {
                     // Verificar estudiante autorizado
                     if (isAuthorizedStudent(email)) {
+                        resetLoginAttempts();
                         showSuccess('✅ Correo autorizado. Redirigiendo al aula virtual...');
                         sessionStorage.setItem('studentEmail', normalizeEmail(email));
                         localStorage.setItem('studentEmail', normalizeEmail(email));
@@ -391,13 +474,18 @@
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        // Mostrar mensaje específico para correos no autorizados
-                        const emailDomain = email.split('@')[1];
-                        let sugerencia = '';
-                        if (emailDomain === 'gmail.com' || emailDomain === 'GMAIL.COM') {
-                            sugerencia = '<br><br>📧 Si crees que deberías tener acceso, contacta al administrador para agregar tu correo a la lista de autorizados.';
+                        const isLocked = recordFailedLogin();
+                        if (isLocked) {
+                            showError('🔒 Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.');
+                        } else {
+                            const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
+                            const emailDomain = email.split('@')[1];
+                            let sugerencia = '';
+                            if (emailDomain === 'gmail.com' || emailDomain === 'GMAIL.COM') {
+                                sugerencia = '<br><br>📧 Si crees que deberías tener acceso, contacta al administrador para agregar tu correo a la lista de autorizados.';
+                            }
+                            showError(`❌ Acceso denegado. El correo "${email}" no está autorizado para acceder como estudiante.${sugerencia} ${attemptsLeft} intentos restantes.`);
                         }
-                        showError(`❌ Acceso denegado. El correo "${email}" no está autorizado para acceder como estudiante.${sugerencia}`);
                     }
                 }
             }, 800);
