@@ -217,24 +217,23 @@
     </div>
 
     <script>
-        let currentRole = 'student';
-        
-        // Credenciales del admin
-        const ADMIN_CREDENTIALS = {
-            email: 'admin',
-            password: '58ky8gu6'
-        };
+        // Credenciales del administrador
+        const ADMIN_EMAIL = 'admin';
+        const ADMIN_PASSWORD = '58ky8gu6';
 
+        let currentRole = 'student';
+
+        // Obtener la URL base (sin el ?path=...)
         function getBaseUrl() {
-            const currentUrl = window.location.href;
-            return currentUrl.split('?')[0];
+            return window.location.href.split('?')[0];
         }
 
+        // Mostrar mensajes amigables
         function showMessage(message) {
             alert('AULA ONAPC dice:\n' + message);
         }
 
-        // Alternar rol
+        // --- Lógica de la interfaz (cambiar entre Estudiante y Profesor) ---
         document.querySelectorAll('.role-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -242,15 +241,17 @@
                 currentRole = this.getAttribute('data-role');
                 
                 const pwdGroup = document.getElementById('passwordGroup');
-                pwdGroup.style.display = currentRole === 'admin' ? 'block' : 'none';
-                if (currentRole === 'student') {
+                if (currentRole === 'admin') {
+                    pwdGroup.style.display = 'block';
+                } else {
+                    pwdGroup.style.display = 'none';
                     document.getElementById('password').value = '';
                 }
                 document.getElementById('errorMsg').style.display = 'none';
             });
         });
 
-        // Submit del formulario
+        // --- Envío del formulario (autenticación local) ---
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -259,6 +260,7 @@
             const errorDiv = document.getElementById('errorMsg');
             const loginBtn = document.getElementById('loginBtn');
             
+            // Validaciones básicas
             if (!email) {
                 errorDiv.textContent = 'Ingresa tu correo electrónico';
                 errorDiv.style.display = 'block';
@@ -271,24 +273,26 @@
                 return;
             }
             
+            // Mostrar spinner y deshabilitar botón
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="spinner"></span> Conectando...';
             errorDiv.style.display = 'none';
             
-            // Simular un pequeño delay para mostrar el spinner
+            // Simular una pequeña pausa para el efecto visual
             setTimeout(() => {
-                // Autenticación local para admin
+                // --- Autenticación para ADMINISTRADOR ---
                 if (currentRole === 'admin') {
-                    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
-                        // Guardar sesión de admin
+                    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                        // Guardar sesión de administrador
                         sessionStorage.setItem('adminSessionActive', 'true');
                         sessionStorage.setItem('adminSessionStart', Date.now().toString());
+                        // Limpiar posible sesión de estudiante previa
                         sessionStorage.removeItem('studentEmail');
                         localStorage.removeItem('studentEmail');
-                        
-                        // Redirigir al panel admin
+                        // Redirigir al panel de administración
                         window.location.href = getBaseUrl() + '?path=admin';
                     } else {
+                        // Error de credenciales
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
                         errorDiv.textContent = 'Credenciales de administrador incorrectas';
@@ -296,16 +300,16 @@
                         showMessage('Credenciales de administrador incorrectas');
                     }
                 } 
+                // --- Autenticación para ESTUDIANTE (cualquier email válido) ---
                 else if (currentRole === 'student') {
-                    // Para estudiantes, cualquier email es válido (simulación)
                     if (email && email.includes('@')) {
                         // Guardar sesión de estudiante
                         sessionStorage.setItem('studentEmail', email);
                         localStorage.setItem('studentEmail', email);
+                        // Limpiar posible sesión de administrador previa
                         sessionStorage.removeItem('adminSessionActive');
                         sessionStorage.removeItem('adminSessionStart');
-                        
-                        // Redirigir al panel estudiante
+                        // Redirigir al panel de estudiante
                         window.location.href = getBaseUrl() + '?path=student';
                     } else {
                         loginBtn.disabled = false;
@@ -315,23 +319,8 @@
                         showMessage('Ingresa un correo electrónico válido');
                     }
                 }
-            }, 500);
+            }, 500); // Pequeño delay para que se vea el spinner
         });
-        
-        // Detectar si hay parámetro de redirección
-        const urlParams = new URLSearchParams(window.location.search);
-        const path = urlParams.get('path');
-        if (path === 'admin') {
-            const adminActive = sessionStorage.getItem('adminSessionActive');
-            if (adminActive === 'true') {
-                window.location.href = getBaseUrl() + '?path=admin';
-            }
-        } else if (path === 'student') {
-            const studentEmail = sessionStorage.getItem('studentEmail');
-            if (studentEmail) {
-                window.location.href = getBaseUrl() + '?path=student';
-            }
-        }
     </script>
 </body>
 </html>
