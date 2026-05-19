@@ -71,6 +71,7 @@
             padding: 28px 32px;
             border-radius: 32px;
             margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .welcome h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 6px; }
         .welcome p { font-size: 0.85rem; opacity: 0.9; }
@@ -108,6 +109,7 @@
             align-items: center; 
             flex-wrap: wrap;
             gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04); 
             border: 1px solid #e2e8f0;
         }
         .file-item div strong { font-size: 0.95rem; font-weight: 600; color: #1e293b; }
@@ -121,6 +123,7 @@
             cursor: pointer; 
             font-weight: 500; 
             font-size: 0.85rem;
+            transition: 0.2s;
         }
         .view-btn:hover { transform: scale(1.02); }
 
@@ -133,6 +136,7 @@
             cursor: pointer; 
             margin-bottom: 24px; 
             font-weight: 500;
+            font-size: 0.85rem;
         }
 
         .empty-state { 
@@ -142,6 +146,7 @@
             border-radius: 32px; 
             color: #64748b; 
             border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
         }
 
         .loader {
@@ -201,24 +206,28 @@
         <div id="aulasView"><div id="aulasList" class="aulas-grid"></div></div>
         <div id="filesView" style="display: none;">
             <button class="back-btn" onclick="volverAulas()">← Volver a mis aulas</button>
-            <h2 id="aulaTitle" style="margin-bottom: 20px; color: #1e40af;"></h2>
+            <h2 id="aulaTitle" style="margin-bottom: 20px; color: #1e40af; font-size: 1.3rem; font-weight: 600;"></h2>
             <div id="filesList" class="files-list"></div>
         </div>
     </div>
     <div id="loader" class="loader"><div class="spinner"></div></div>
 
     <script>
-        // Reloj
+        // Reloj en tiempo real
         function updateClock() {
             const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
             const clockElement = document.getElementById('realTimeClock');
             if (clockElement) {
-                clockElement.textContent = now.toLocaleTimeString('es-ES');
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
             }
         }
         updateClock();
         setInterval(updateClock, 1000);
-
+        
+        // Funciones auxiliares
         function getBaseUrl() {
             return window.location.href.split('?')[0];
         }
@@ -231,13 +240,35 @@
             alert('AULA ONAPC dice:\n' + message);
         }
 
-        // Verificar sesión
+        // Verificar sesión estudiante
         (function verificarSesion() {
             const studentEmail = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
-            if (!studentEmail) redirectToLogin();
+            if (!studentEmail) {
+                redirectToLogin();
+                return;
+            }
         })();
 
-        let aulas = [];
+        // Datos de ejemplo (mismos que en admin)
+        let aulas = [
+            {
+                id: '1',
+                name: 'Matemáticas Avanzadas',
+                files: [
+                    { id: 'f1', title: 'Álgebra Lineal', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+                    { id: 'f2', title: 'Cálculo Diferencial', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                ]
+            },
+            {
+                id: '2',
+                name: 'Programación Web',
+                files: [
+                    { id: 'f3', title: 'Introducción a HTML', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+                    { id: 'f4', title: 'CSS Avanzado', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                ]
+            }
+        ];
+
         let emailEstudiante = null;
         let progresoActual = null;
         let sesionActual = null;
@@ -246,7 +277,8 @@
 
         function mostrarLoader(show) { 
             const el = document.getElementById('loader'); 
-            show ? el.classList.add('show') : el.classList.remove('show'); 
+            if (show) el.classList.add('show'); 
+            else el.classList.remove('show'); 
         }
 
         function generarId() { 
@@ -271,20 +303,23 @@
             return email;
         }
 
-        function guardarProgreso(email, prog) { 
-            return new Promise((resolve, reject) => { 
-                google.script.run
-                    .withSuccessHandler(resolve)
-                    .withFailureHandler(reject)
-                    .saveProgress(email, prog); 
-            }); 
+        function cargarProgresoLocal(email) {
+            const progresoGuardado = localStorage.getItem(`progreso_${email}`);
+            if (progresoGuardado) {
+                return JSON.parse(progresoGuardado);
+            }
+            return { sessions: [] };
+        }
+
+        function guardarProgresoLocal(email, prog) {
+            localStorage.setItem(`progreso_${email}`, JSON.stringify(prog));
         }
 
         function guardarProgresoDebounced() { 
             if(timeoutGuardar) clearTimeout(timeoutGuardar); 
             timeoutGuardar = setTimeout(() => { 
                 if(emailEstudiante && progresoActual) {
-                    guardarProgreso(emailEstudiante, progresoActual).catch(e => console.warn(e)); 
+                    guardarProgresoLocal(emailEstudiante, progresoActual);
                 }
             }, 900); 
         }
@@ -405,7 +440,7 @@
             registrarSalidaAula();
             if(sesionActual) { 
                 sesionActual.sessionEnd = new Date().toISOString(); 
-                guardarProgreso(emailEstudiante, progresoActual); 
+                guardarProgresoLocal(emailEstudiante, progresoActual);
             }
             sessionStorage.removeItem('studentEmail');
             localStorage.removeItem('studentEmail');
@@ -418,50 +453,36 @@
             if(sesionActual && progresoActual) { 
                 registrarSalidaAula(); 
                 sesionActual.sessionEnd = new Date().toISOString(); 
-                guardarProgreso(emailEstudiante, progresoActual); 
+                guardarProgresoLocal(emailEstudiante, progresoActual);
             } 
         });
 
         // Inicialización
-        (async function init() {
-            emailEstudiante = obtenerEmail();
-            if(!emailEstudiante) { 
-                redirectToLogin();
-                return; 
-            }
+        emailEstudiante = obtenerEmail();
+        if(!emailEstudiante) { 
+            redirectToLogin();
+        } else {
             document.getElementById('studentEmailDisplay').innerText = escapar(emailEstudiante);
             
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    if (res && res.success) {
-                        aulas = res.aulas || [];
-                        progresoActual = res.progress || { sessions: [] };
-                        
-                        if (!progresoActual.sessions) progresoActual.sessions = [];
-                        
-                        sesionActual = { 
-                            sessionId: generarId(), 
-                            sessionStart: new Date().toISOString(), 
-                            sessionEnd: null, 
-                            aulasVisited: [] 
-                        }; 
-                        progresoActual.sessions.push(sesionActual); 
-                        guardarProgreso(emailEstudiante, progresoActual); 
-                        
-                        renderizarAulas();
-                        document.getElementById('initialLoader').style.display = 'none';
-                    } else {
-                        showMessage('Error: ' + (res ? res.error : 'No hay respuesta'));
-                        document.getElementById('initialLoader').style.display = 'none';
-                    }
-                })
-                .withFailureHandler(function(err) {
-                    console.error('Error:', err);
-                    document.getElementById('initialLoader').style.display = 'none';
-                    showMessage('No se pudo conectar con el servidor');
-                })
-                .getStudentInitialData(emailEstudiante);
-        })();
+            progresoActual = cargarProgresoLocal(emailEstudiante);
+            if (!progresoActual.sessions) progresoActual.sessions = [];
+            
+            sesionActual = { 
+                sessionId: generarId(), 
+                sessionStart: new Date().toISOString(), 
+                sessionEnd: null, 
+                aulasVisited: [] 
+            }; 
+            progresoActual.sessions.push(sesionActual); 
+            guardarProgresoLocal(emailEstudiante, progresoActual);
+            
+            renderizarAulas();
+            
+            // Ocultar loader
+            setTimeout(() => {
+                document.getElementById('initialLoader').style.display = 'none';
+            }, 1000);
+        }
     </script>
 </body>
 </html>
