@@ -16,32 +16,15 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-repeat: no-repeat;
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            position: relative;
-        }
-
-        /* Fondo completamente transparente */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.00);
-            z-index: 0;
-            pointer-events: none;
         }
 
         .login-container {
-            position: relative;
-            z-index: 1;
             background: white;
             border-radius: 48px;
             width: 100%;
@@ -65,7 +48,6 @@
 
         .login-header p {
             font-size: 13px;
-            font-weight: 400;
             opacity: 0.88;
         }
 
@@ -164,7 +146,6 @@
             font-size: 0.8rem;
             font-weight: 500;
             display: none;
-            border-left: 4px solid #3b82f6;
         }
 
         .login-footer {
@@ -195,8 +176,6 @@
         @media (max-width: 540px) {
             .login-header { padding: 28px 24px; }
             .login-body { padding: 28px 24px; }
-            .login-footer { padding: 16px 24px; }
-            .login-header h1 { font-size: 24px; }
         }
     </style>
 </head>
@@ -233,25 +212,22 @@
         </div>
 
         <div class="login-footer">
-            <p>© 2026 AULA ONAPC - Todos los derechos reservados</p>
+            <p>© 2025 AULA ONAPC - Todos los derechos reservados</p>
         </div>
     </div>
 
     <script>
         let currentRole = 'student';
-        
-        // Función para obtener la URL base (sin parámetros)
+
         function getBaseUrl() {
-            const currentUrl = window.location.href;
-            // Remover parámetros de query
-            return currentUrl.split('?')[0];
+            return window.location.href.split('?')[0];
         }
-        
-        // Función para mostrar mensajes con el formato "AULA ONAPC dice:"
-        function showMessage(message, isError = true) {
+
+        function showMessage(message) {
             alert('AULA ONAPC dice:\n' + message);
         }
 
+        // Alternar rol
         document.querySelectorAll('.role-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -259,16 +235,15 @@
                 currentRole = this.getAttribute('data-role');
                 
                 const pwdGroup = document.getElementById('passwordGroup');
-                if (currentRole === 'admin') {
-                    pwdGroup.style.display = 'block';
-                } else {
-                    pwdGroup.style.display = 'none';
+                pwdGroup.style.display = currentRole === 'admin' ? 'block' : 'none';
+                if (currentRole === 'student') {
                     document.getElementById('password').value = '';
                 }
                 document.getElementById('errorMsg').style.display = 'none';
             });
         });
 
+        // Submit del formulario
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -293,49 +268,34 @@
             loginBtn.innerHTML = '<span class="spinner"></span> Conectando...';
             errorDiv.style.display = 'none';
             
-            // Primero autenticamos
-            google.script.run.withSuccessHandler(function(result) {
-                if (result && result.success) {
-                    // Guardar datos de sesión según el rol
-                    if (result.role === 'student') {
-                        sessionStorage.setItem('studentEmail', result.email);
-                        localStorage.setItem('studentEmail', result.email);
-                        sessionStorage.removeItem('adminSessionActive');
-                        sessionStorage.removeItem('adminSessionStart');
-                    } else if (result.role === 'admin') {
-                        sessionStorage.setItem('adminSessionActive', 'true');
-                        sessionStorage.setItem('adminSessionStart', Date.now().toString());
-                        sessionStorage.removeItem('studentEmail');
-                        localStorage.removeItem('studentEmail');
-                    }
+            // Autenticar
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result && result.success) {
+                        // Guardar sesión
+                        if (result.role === 'student') {
+                            sessionStorage.setItem('studentEmail', result.email);
+                            localStorage.setItem('studentEmail', result.email);
+                        } else if (result.role === 'admin') {
+                            sessionStorage.setItem('adminSessionActive', 'true');
+                            sessionStorage.setItem('adminSessionStart', Date.now().toString());
+                        }
 
-                    // Redirección especial para administradores a la edición del Google Site
-                    if (result.role === 'admin') {
-                        window.top.location.href = 'https://sites.google.com/d/123wEfGh2fms3bG8utEfkwOJgxNOO83RB/p/11AZ9gqOhZL9ZpdvBm0n8JzTlOQAyq3HD/edit';
-                        return;
+                        // Redirigir
+                        const baseUrl = getBaseUrl();
+                        if (result.role === 'admin') {
+                            window.top.location.href = baseUrl + '?path=admin';
+                        } else {
+                            window.top.location.href = baseUrl + '?path=student';
+                        }
+                    } else {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = 'Ingresar al Aula';
+                        let errorMsg = result.error || 'Error de autenticación';
+                        errorDiv.textContent = errorMsg;
+                        errorDiv.style.display = 'block';
+                        showMessage(errorMsg);
                     }
-
-                    // OBTENER URL CORRECTA DEL SCRIPT PARA REDIRIGIR
-                    google.script.run.withSuccessHandler(function(scriptUrl) {
-                        // Si getScriptUrl falla o devuelve vacío, usamos la URL actual como base
-                        let baseUrl = scriptUrl ? scriptUrl.split('?')[0] : window.location.href.split('?')[0];
-                        
-                        // Aseguramos que la redirección ocurra en la ventana superior (fuera del iframe)
-                        window.top.location.href = baseUrl + '?path=' + result.role;
-                    }).withFailureHandler(function(err) {
-                        console.error('Error obteniendo URL:', err);
-                        // Fallback de emergencia
-                        const baseUrl = window.location.href.split('?')[0];
-                        window.top.location.href = baseUrl + '?path=' + result.role;
-                    }).getScriptUrl();
-                } else {
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Ingresar al Aula';
-                    let errorMsg = result.error || 'Error de autenticación';
-                    errorDiv.textContent = errorMsg;
-                    errorDiv.style.display = 'block';
-                    showMessage(errorMsg);
-                }
                 })
                 .withFailureHandler(function(err) {
                     loginBtn.disabled = false;
