@@ -20,6 +20,8 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #3b82f6;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .clock { background: #eff6ff; padding: 6px 14px; border-radius: 40px; font-family: monospace; }
         .logout-btn { background: #eff6ff; border: 1px solid #bfdbfe; padding: 8px 24px; border-radius: 40px; cursor: pointer; }
@@ -35,7 +37,7 @@
         .progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 12px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg,#1e40af,#3b82f6); width: 0%; }
         .files-list { display: flex; flex-direction: column; gap: 12px; }
-        .file-item { background: white; padding: 16px 20px; border-radius: 28px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
+        .file-item { background: white; padding: 16px 20px; border-radius: 28px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 12px; }
         .view-btn { background: linear-gradient(135deg,#1e40af,#3b82f6); border: none; color: white; padding: 8px 24px; border-radius: 40px; cursor: pointer; }
         .back-btn { background: #64748b; color: white; border: none; padding: 10px 24px; border-radius: 40px; cursor: pointer; margin-bottom: 24px; }
         .empty-state { text-align: center; padding: 60px; background: white; border-radius: 32px; color: #64748b; }
@@ -45,25 +47,167 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         #initialLoader { position: fixed; top:0; left:0; right:0; bottom:0; background: white; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
         .initial-spinner { width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        
+        /* Modal para visualizar materiales */
+        .material-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .material-modal.active {
+            display: flex;
+        }
+        .modal-container {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .modal-header {
+            padding: 16px 24px;
+            background: #1e40af;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 1.2rem;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: black;
+            border-radius: 16px;
+        }
+        .video-container iframe,
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .pdf-viewer {
+            width: 100%;
+            height: 70vh;
+            border: none;
+            border-radius: 16px;
+        }
+        .download-option {
+            text-align: center;
+            margin-top: 20px;
+            padding: 16px;
+            background: #eff6ff;
+            border-radius: 28px;
+        }
+        .download-btn {
+            background: linear-gradient(135deg,#1e40af,#3b82f6);
+            color: white;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .warning-message {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .file-info {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
     <div id="initialLoader"><div class="initial-spinner"></div><p style="color:#1e40af;">Cargando tu aula virtual...</p></div>
+    
     <div class="navbar">
         <h2>📚 AULA ONAPC</h2>
-        <div class="right-section"><div class="clock" id="realTimeClock">--:--:--</div><button class="logout-btn" onclick="logout()">🚪 Salir</button></div>
+        <div class="right-section">
+            <div class="clock" id="realTimeClock">--:--:--</div>
+            <button class="logout-btn" onclick="logout()">🚪 Salir</button>
+        </div>
     </div>
+    
     <div class="container">
-        <div class="welcome"><h1>Bienvenido</h1><p id="studentEmailDisplay">Cargando...</p></div>
-        <div id="aulasView"><div id="aulasList" class="aulas-grid"></div></div>
-        <div id="filesView" style="display:none;"><button class="back-btn" onclick="volverAulas()">← Volver</button><h2 id="aulaTitle" style="margin-bottom:20px;color:#1e40af;"></h2><div id="filesList" class="files-list"></div></div>
-    </div>
-    <div id="loader" class="loader"><div class="spinner"></div></div>
-    <script>
-        function updateClock() { document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES'); }
-        updateClock(); setInterval(updateClock, 1000);
+        <div class="welcome">
+            <h1>Bienvenido</h1>
+            <p id="studentEmailDisplay">Cargando...</p>
+        </div>
         
-        function redirectToLogin() { window.location.href = 'index.html'; }
+        <div id="aulasView">
+            <div id="aulasList" class="aulas-grid"></div>
+        </div>
+        
+        <div id="filesView" style="display:none;">
+            <button class="back-btn" onclick="volverAulas()">← Volver a Aulas</button>
+            <h2 id="aulaTitle" style="margin-bottom:20px;color:#1e40af;"></h2>
+            <div id="filesList" class="files-list"></div>
+        </div>
+    </div>
+    
+    <!-- Modal para visualizar materiales -->
+    <div id="materialModal" class="material-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modalTitle">Cargando...</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-content" id="modalContent">
+                <div style="text-align:center;padding:40px;">Cargando contenido...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loader" class="loader"><div class="spinner"></div></div>
+    
+    <script>
+        function updateClock() { 
+            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES'); 
+        }
+        updateClock(); 
+        setInterval(updateClock, 1000);
+        
+        function redirectToLogin() { 
+            window.location.href = 'index.html'; 
+        }
         
         (function() { 
             if(!sessionStorage.getItem('studentEmail') && !localStorage.getItem('studentEmail')) redirectToLogin(); 
@@ -72,13 +216,16 @@
         let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
-        // Cargar datos desde el almacenamiento compartido
         let aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
         
-        // Cargar progreso del estudiante actual
         let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
         let progreso = progresoGeneral[email] || { sessions: [] };
-        let sesionActual = { sessionId: Date.now()+'_'+Math.random().toString(36).substr(2,6), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] };
+        let sesionActual = { 
+            sessionId: Date.now()+'_'+Math.random().toString(36).substr(2,6), 
+            sessionStart: new Date().toISOString(), 
+            sessionEnd: null, 
+            aulasVisited: [] 
+        };
         progreso.sessions.push(sesionActual);
         
         function guardarProgresoGlobal() {
@@ -88,47 +235,213 @@
         guardarProgresoGlobal();
         
         let aulaActualId = null, timeout = null;
-        function debouncedSave() { if(timeout) clearTimeout(timeout); timeout = setTimeout(() => guardarProgresoGlobal(), 900); }
+        function debouncedSave() { 
+            if(timeout) clearTimeout(timeout); 
+            timeout = setTimeout(() => guardarProgresoGlobal(), 900); 
+        }
         
         function registrarEntradaAula(id, name) { 
             if(aulaActualId) registrarSalidaAula(); 
-            aulaActualId=id; 
-            sesionActual.aulasVisited.push({ aulaId:id, aulaName:name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }); 
+            aulaActualId = id; 
+            sesionActual.aulasVisited.push({ 
+                aulaId: id, 
+                aulaName: name, 
+                entryTime: new Date().toISOString(), 
+                exitTime: null, 
+                materialsViewed: [] 
+            }); 
             debouncedSave(); 
         }
         
         function registrarSalidaAula() { 
-            let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaActualId && !v.exitTime); 
-            if(v) v.exitTime=new Date().toISOString(); 
-            aulaActualId=null; 
+            let v = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime); 
+            if(v) v.exitTime = new Date().toISOString(); 
+            aulaActualId = null; 
             debouncedSave(); 
         }
         
         function registrarVista(aulaId, fileId, title) { 
-            let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaId && !v.exitTime); 
+            let v = sesionActual.aulasVisited.find(v => v.aulaId === aulaId && !v.exitTime); 
             if(!v) { 
-                let a=aulas.find(a=>a.id===aulaId); 
-                v={ aulaId, aulaName:a?.name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }; 
+                let a = aulas.find(a => a.id === aulaId); 
+                v = { 
+                    aulaId, 
+                    aulaName: a?.name, 
+                    entryTime: new Date().toISOString(), 
+                    exitTime: null, 
+                    materialsViewed: [] 
+                }; 
                 sesionActual.aulasVisited.push(v); 
             } 
-            let m = v.materialsViewed.find(m=>m.fileId===fileId); 
+            let m = v.materialsViewed.find(m => m.fileId === fileId); 
             if(!m) { 
-                m={ fileId, fileTitle:title, viewCount:0, firstView:new Date().toISOString(), lastView:null }; 
+                m = { 
+                    fileId, 
+                    fileTitle: title, 
+                    viewCount: 0, 
+                    firstView: new Date().toISOString(), 
+                    lastView: null 
+                }; 
                 v.materialsViewed.push(m); 
             } 
             m.viewCount++; 
-            m.lastView=new Date().toISOString(); 
+            m.lastView = new Date().toISOString(); 
             debouncedSave(); 
         }
         
-        function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        function escapar(t) { 
+            return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; 
+        }
+        
+        // Función mejorada para obtener ID de Google Drive desde cualquier tipo de URL
+        function getGoogleDriveId(url) {
+            // Patrones de URLs de Google Drive
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9_-]+)/,
+                /id=([a-zA-Z0-9_-]+)/,
+                /\/d\/([a-zA-Z0-9_-]+)/,
+                /uc\?id=([a-zA-Z0-9_-]+)/,
+                /open\?id=([a-zA-Z0-9_-]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+            return null;
+        }
+        
+        // Determinar el tipo de archivo por su URL
+        function getFileType(url) {
+            const driveId = getGoogleDriveId(url);
+            if (driveId) return 'google-drive';
+            
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) return 'youtube';
+            if (urlLower.includes('vimeo.com')) return 'vimeo';
+            if (urlLower.endsWith('.pdf')) return 'pdf';
+            if (urlLower.endsWith('.mp4') || urlLower.endsWith('.webm') || urlLower.endsWith('.mov')) return 'video-directo';
+            if (urlLower.match(/\.(ppt|pptx|doc|docx|xls|xlsx)$/)) return 'office';
+            
+            return 'unknown';
+        }
+        
+        // Generar HTML para visualizar el contenido
+        function generarVisorMaterial(title, url) {
+            const type = getFileType(url);
+            const driveId = getGoogleDriveId(url);
+            
+            switch(type) {
+                case 'youtube':
+                    // Extraer ID de YouTube
+                    let youtubeId = '';
+                    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/);
+                    if (ytMatch) youtubeId = ytMatch[1];
+                    return `
+                        <div class="video-container">
+                            <iframe src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    `;
+                    
+                case 'vimeo':
+                    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                    const vimeoId = vimeoMatch ? vimeoMatch[1] : '';
+                    return `
+                        <div class="video-container">
+                            <iframe src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    `;
+                    
+                case 'google-drive':
+                    if (driveId) {
+                        // Intentamos vista previa embebida
+                        return `
+                            <div class="video-container">
+                                <iframe src="https://drive.google.com/file/d/${driveId}/preview" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <div class="download-option">
+                                <p>⚠️ Si el archivo no se visualiza correctamente (archivos muy grandes), puedes descargarlo:</p>
+                                <a href="https://drive.google.com/uc?export=download&id=${driveId}" class="download-btn" target="_blank">⬇️ Descargar archivo</a>
+                            </div>
+                        `;
+                    }
+                    return `
+                        <div class="warning-message">
+                            ⚠️ No se pudo procesar el enlace de Google Drive. Verifica la URL.
+                        </div>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" target="_blank">📥 Abrir en Google Drive</a>
+                        </div>
+                    `;
+                    
+                case 'pdf':
+                    return `
+                        <iframe class="pdf-viewer" src="${url}" frameborder="0"></iframe>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar PDF</a>
+                        </div>
+                    `;
+                    
+                case 'video-directo':
+                    return `
+                        <div class="video-container">
+                            <video controls autoplay>
+                                <source src="${url}" type="video/mp4">
+                                Tu navegador no soporta el elemento de video.
+                            </video>
+                        </div>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar video</a>
+                        </div>
+                    `;
+                    
+                case 'office':
+                    // Usar el visor de Microsoft Office Online
+                    const encodedUrl = encodeURIComponent(url);
+                    return `
+                        <iframe class="pdf-viewer" src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" frameborder="0"></iframe>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" target="_blank">📥 Abrir documento</a>
+                        </div>
+                    `;
+                    
+                default:
+                    return `
+                        <div class="warning-message">
+                            ⚠️ No se puede visualizar este tipo de archivo automáticamente.
+                        </div>
+                        <div class="download-option">
+                            <a href="${url}" class="download-btn" target="_blank">🔗 Abrir enlace</a>
+                        </div>
+                    `;
+            }
+        }
+        
+        function abrirMaterial(aulaId, fileId, title, url) { 
+            registrarVista(aulaId, fileId, title);
+            
+            // Mostrar modal con el visor
+            const modal = document.getElementById('materialModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalTitle.textContent = title;
+            modalContent.innerHTML = generarVisorMaterial(title, url);
+            modal.classList.add('active');
+        }
+        
+        function cerrarModal() {
+            const modal = document.getElementById('materialModal');
+            modal.classList.remove('active');
+            document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:40px;">Cargando contenido...</div>';
+        }
         
         function renderizarAulas() {
             let html = '';
             aulas.forEach(a => { 
-                let visit = sesionActual.aulasVisited.find(v=>v.aulaId===a.id); 
-                let vistos = visit?.materialsViewed?.length||0; 
-                let total = a.files?.length||0; 
+                let visit = sesionActual.aulasVisited.find(v => v.aulaId === a.id); 
+                let vistos = visit?.materialsViewed?.length || 0; 
+                let total = a.files?.length || 0; 
                 let pct = total ? (vistos/total)*100 : 0; 
                 html += `<div class="aula-card" onclick="entrarAula('${a.id}')">
                             <div class="aula-header"><h3>${escapar(a.name)}</h3></div>
@@ -138,54 +451,44 @@
                             </div>
                          </div>`; 
             });
-            document.getElementById('aulasList').innerHTML = html || '<div class="empty-state">📭 No hay aulas</div>';
+            document.getElementById('aulasList').innerHTML = html || '<div class="empty-state">📭 No hay aulas disponibles</div>';
         }
         
         function renderizarArchivos(id) { 
-            let a = aulas.find(a=>a.id===id); 
+            let a = aulas.find(a => a.id === id); 
             let html = ''; 
-            a?.files.forEach(f => { 
-                html += `<div class="file-item">
-                            <div><strong>${escapar(f.title)}</strong></div>
-                            <button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver</button>
-                         </div>`; 
-            }); 
-            document.getElementById('filesList').innerHTML = html || '<div class="empty-state">📭 Sin materiales</div>'; 
+            if (!a || !a.files?.length) {
+                html = '<div class="empty-state">📭 Este aula aún no tiene materiales</div>';
+            } else {
+                a.files.forEach(f => { 
+                    html += `<div class="file-item">
+                                <div>
+                                    <strong>${escapar(f.title)}</strong>
+                                    <div class="file-info">📎 ${f.url.substring(0, 60)}${f.url.length > 60 ? '...' : ''}</div>
+                                </div>
+                                <button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver / Estudiar</button>
+                             </div>`; 
+                });
+            }
+            document.getElementById('filesList').innerHTML = html; 
         }
         
         function entrarAula(id) { 
-            let a = aulas.find(a=>a.id===id); 
+            let a = aulas.find(a => a.id === id); 
             if(a) { 
                 registrarEntradaAula(id, a.name); 
                 document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(a.name)}`; 
-                document.getElementById('aulasView').style.display='none'; 
-                document.getElementById('filesView').style.display='block'; 
+                document.getElementById('aulasView').style.display = 'none'; 
+                document.getElementById('filesView').style.display = 'block'; 
                 renderizarArchivos(id); 
             } 
         }
         
         function volverAulas() { 
             registrarSalidaAula(); 
-            document.getElementById('aulasView').style.display='block'; 
-            document.getElementById('filesView').style.display='none'; 
+            document.getElementById('aulasView').style.display = 'block'; 
+            document.getElementById('filesView').style.display = 'none'; 
             renderizarAulas(); 
-        }
-        
-        function getDriveDownloadUrl(url) {
-            // Detecta URLs de Google Drive
-            const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (driveMatch && driveMatch[1]) {
-                const fileId = driveMatch[1];
-                // Usamos el enlace de vista previa/descarga directa
-                return `https://drive.google.com/uc?export=download&id=${fileId}`;
-            }
-            return url;
-        }
-        
-        function abrirMaterial(aulaId, fileId, title, url) { 
-            registrarVista(aulaId, fileId, title); 
-            const finalUrl = getDriveDownloadUrl(url);
-            window.open(finalUrl, '_blank'); 
         }
         
         function logout() { 
@@ -205,8 +508,15 @@
             } 
         });
         
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+        });
+        
         renderizarAulas();
-        setTimeout(()=>document.getElementById('initialLoader').style.display='none', 800);
+        setTimeout(() => document.getElementById('initialLoader').style.display = 'none', 800);
     </script>
 </body>
 </html>
