@@ -62,33 +62,149 @@
     <script>
         function updateClock() { document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES'); }
         updateClock(); setInterval(updateClock, 1000);
+        
         function redirectToLogin() { window.location.href = 'index.html'; }
-        (function() { if(!sessionStorage.getItem('studentEmail') && !localStorage.getItem('studentEmail')) redirectToLogin(); })();
+        
+        (function() { 
+            if(!sessionStorage.getItem('studentEmail') && !localStorage.getItem('studentEmail')) redirectToLogin(); 
+        })();
+        
         let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
+        
+        // Cargar datos desde el almacenamiento compartido
         let aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
-        let progreso = JSON.parse(localStorage.getItem(`progreso_${email}`) || '{"sessions":[]}');
+        
+        // Cargar progreso del estudiante actual
+        let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
+        let progreso = progresoGeneral[email] || { sessions: [] };
         let sesionActual = { sessionId: Date.now()+'_'+Math.random().toString(36).substr(2,6), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] };
         progreso.sessions.push(sesionActual);
-        function guardarProgreso() { localStorage.setItem(`progreso_${email}`, JSON.stringify(progreso)); }
-        guardarProgreso();
+        
+        function guardarProgresoGlobal() {
+            progresoGeneral[email] = progreso;
+            localStorage.setItem('progreso_onapc', JSON.stringify(progresoGeneral));
+        }
+        guardarProgresoGlobal();
+        
         let aulaActualId = null, timeout = null;
-        function debouncedSave() { if(timeout) clearTimeout(timeout); timeout = setTimeout(() => guardarProgreso(), 900); }
-        function registrarEntradaAula(id, name) { if(aulaActualId) registrarSalidaAula(); aulaActualId=id; sesionActual.aulasVisited.push({ aulaId:id, aulaName:name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }); debouncedSave(); }
-        function registrarSalidaAula() { let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaActualId && !v.exitTime); if(v) v.exitTime=new Date().toISOString(); aulaActualId=null; debouncedSave(); }
-        function registrarVista(aulaId, fileId, title) { let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaId && !v.exitTime); if(!v) { let a=aulas.find(a=>a.id===aulaId); v={ aulaId, aulaName:a?.name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }; sesionActual.aulasVisited.push(v); } let m = v.materialsViewed.find(m=>m.fileId===fileId); if(!m) { m={ fileId, fileTitle:title, viewCount:0, firstView:new Date().toISOString(), lastView:null }; v.materialsViewed.push(m); } m.viewCount++; m.lastView=new Date().toISOString(); debouncedSave(); }
+        function debouncedSave() { if(timeout) clearTimeout(timeout); timeout = setTimeout(() => guardarProgresoGlobal(), 900); }
+        
+        function registrarEntradaAula(id, name) { 
+            if(aulaActualId) registrarSalidaAula(); 
+            aulaActualId=id; 
+            sesionActual.aulasVisited.push({ aulaId:id, aulaName:name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }); 
+            debouncedSave(); 
+        }
+        
+        function registrarSalidaAula() { 
+            let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaActualId && !v.exitTime); 
+            if(v) v.exitTime=new Date().toISOString(); 
+            aulaActualId=null; 
+            debouncedSave(); 
+        }
+        
+        function registrarVista(aulaId, fileId, title) { 
+            let v = sesionActual.aulasVisited.find(v=>v.aulaId===aulaId && !v.exitTime); 
+            if(!v) { 
+                let a=aulas.find(a=>a.id===aulaId); 
+                v={ aulaId, aulaName:a?.name, entryTime:new Date().toISOString(), exitTime:null, materialsViewed:[] }; 
+                sesionActual.aulasVisited.push(v); 
+            } 
+            let m = v.materialsViewed.find(m=>m.fileId===fileId); 
+            if(!m) { 
+                m={ fileId, fileTitle:title, viewCount:0, firstView:new Date().toISOString(), lastView:null }; 
+                v.materialsViewed.push(m); 
+            } 
+            m.viewCount++; 
+            m.lastView=new Date().toISOString(); 
+            debouncedSave(); 
+        }
+        
         function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        
         function renderizarAulas() {
             let html = '';
-            aulas.forEach(a => { let visit = sesionActual.aulasVisited.find(v=>v.aulaId===a.id); let vistos = visit?.materialsViewed?.length||0; let total = a.files?.length||0; let pct = total ? (vistos/total)*100 : 0; html += `<div class="aula-card" onclick="entrarAula('${a.id}')"><div class="aula-header"><h3>${escapar(a.name)}</h3></div><div class="aula-body"><div>📄 ${total} materiales | 👁️ ${vistos} vistos</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div></div>`; });
+            aulas.forEach(a => { 
+                let visit = sesionActual.aulasVisited.find(v=>v.aulaId===a.id); 
+                let vistos = visit?.materialsViewed?.length||0; 
+                let total = a.files?.length||0; 
+                let pct = total ? (vistos/total)*100 : 0; 
+                html += `<div class="aula-card" onclick="entrarAula('${a.id}')">
+                            <div class="aula-header"><h3>${escapar(a.name)}</h3></div>
+                            <div class="aula-body">
+                                <div>📄 ${total} materiales | 👁️ ${vistos} vistos</div>
+                                <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                            </div>
+                         </div>`; 
+            });
             document.getElementById('aulasList').innerHTML = html || '<div class="empty-state">📭 No hay aulas</div>';
         }
-        function renderizarArchivos(id) { let a = aulas.find(a=>a.id===id); let html = ''; a?.files.forEach(f => { html += `<div class="file-item"><div><strong>${escapar(f.title)}</strong></div><button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver</button></div>`; }); document.getElementById('filesList').innerHTML = html || '<div class="empty-state">📭 Sin materiales</div>'; }
-        function entrarAula(id) { let a = aulas.find(a=>a.id===id); if(a) { registrarEntradaAula(id, a.name); document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(a.name)}`; document.getElementById('aulasView').style.display='none'; document.getElementById('filesView').style.display='block'; renderizarArchivos(id); } }
-        function volverAulas() { registrarSalidaAula(); document.getElementById('aulasView').style.display='block'; document.getElementById('filesView').style.display='none'; renderizarAulas(); }
-        function abrirMaterial(aulaId, fileId, title, url) { registrarVista(aulaId, fileId, title); window.open(url, '_blank'); }
-        function logout() { registrarSalidaAula(); sesionActual.sessionEnd = new Date().toISOString(); guardarProgreso(); sessionStorage.clear(); localStorage.removeItem('studentEmail'); window.location.href = 'index.html'; }
-        window.addEventListener('beforeunload', () => { if(sesionActual) { registrarSalidaAula(); sesionActual.sessionEnd = new Date().toISOString(); guardarProgreso(); } });
+        
+        function renderizarArchivos(id) { 
+            let a = aulas.find(a=>a.id===id); 
+            let html = ''; 
+            a?.files.forEach(f => { 
+                html += `<div class="file-item">
+                            <div><strong>${escapar(f.title)}</strong></div>
+                            <button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver</button>
+                         </div>`; 
+            }); 
+            document.getElementById('filesList').innerHTML = html || '<div class="empty-state">📭 Sin materiales</div>'; 
+        }
+        
+        function entrarAula(id) { 
+            let a = aulas.find(a=>a.id===id); 
+            if(a) { 
+                registrarEntradaAula(id, a.name); 
+                document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(a.name)}`; 
+                document.getElementById('aulasView').style.display='none'; 
+                document.getElementById('filesView').style.display='block'; 
+                renderizarArchivos(id); 
+            } 
+        }
+        
+        function volverAulas() { 
+            registrarSalidaAula(); 
+            document.getElementById('aulasView').style.display='block'; 
+            document.getElementById('filesView').style.display='none'; 
+            renderizarAulas(); 
+        }
+        
+        function getDriveDownloadUrl(url) {
+            // Detecta URLs de Google Drive
+            const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (driveMatch && driveMatch[1]) {
+                const fileId = driveMatch[1];
+                // Usamos el enlace de vista previa/descarga directa
+                return `https://drive.google.com/uc?export=download&id=${fileId}`;
+            }
+            return url;
+        }
+        
+        function abrirMaterial(aulaId, fileId, title, url) { 
+            registrarVista(aulaId, fileId, title); 
+            const finalUrl = getDriveDownloadUrl(url);
+            window.open(finalUrl, '_blank'); 
+        }
+        
+        function logout() { 
+            registrarSalidaAula(); 
+            sesionActual.sessionEnd = new Date().toISOString(); 
+            guardarProgresoGlobal(); 
+            sessionStorage.clear(); 
+            localStorage.removeItem('studentEmail'); 
+            window.location.href = 'index.html'; 
+        }
+        
+        window.addEventListener('beforeunload', () => { 
+            if(sesionActual) { 
+                registrarSalidaAula(); 
+                sesionActual.sessionEnd = new Date().toISOString(); 
+                guardarProgresoGlobal(); 
+            } 
+        });
+        
         renderizarAulas();
         setTimeout(()=>document.getElementById('initialLoader').style.display='none', 800);
     </script>
