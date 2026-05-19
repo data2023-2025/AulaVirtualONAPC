@@ -6,40 +6,30 @@
     <title>AULA ONAPC - Panel de Control</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             background-image: url('https://lh3.googleusercontent.com/d/1NpP99FHG2AyA8pXlPLtdU7i14S7dTjp7=w1920-h1080');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             min-height: 100vh;
         }
-
         .navbar {
             background: white;
             padding: 14px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
             border-bottom: 2px solid #3b82f6;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
-        .navbar h2 { font-size: 1.25rem; font-weight: 600; color: #1e40af; }
-        
+        .navbar h2 { color: #1e40af; }
         .clock {
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-family: monospace;
             background: #eff6ff;
             padding: 6px 14px;
             border-radius: 40px;
             color: #1e40af;
-            border: 1px solid #bfdbfe;
         }
-        
         .logout-btn {
             background: #eff6ff;
             border: 1px solid #bfdbfe;
@@ -47,217 +37,36 @@
             padding: 8px 24px;
             border-radius: 40px;
             cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            transition: all 0.2s;
         }
-        .logout-btn:hover { background: #dbeafe; }
-
-        .right-section {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            padding: 28px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-        .stat-card {
-            background: rgba(240, 249, 255, 0.95);
-            backdrop-filter: blur(4px);
-            padding: 22px;
-            border-radius: 28px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        .stat-number { font-size: 34px; font-weight: 700; color: #1e40af; margin-bottom: 6px; }
-        .stat-card div:last-child { font-size: 0.8rem; color: #1e40af; font-weight: 500; }
-
-        .section {
-            background: rgba(248, 250, 252, 0.95);
-            backdrop-filter: blur(4px);
-            border-radius: 32px;
-            padding: 24px;
-            margin-bottom: 28px;
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.25);
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        .section-header h3 { font-size: 1.2rem; font-weight: 700; color: #1e40af; }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 60px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
-        .btn-secondary {
-            background: #64748b;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-        .btn-danger {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-
-        .aula-item, .file-item {
-            background: #eff6ff;
-            padding: 16px 20px;
-            border-radius: 24px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            border: 1px solid rgba(59, 130, 246, 0.15);
-            transition: all 0.2s;
-        }
-        .aula-item:hover, .file-item:hover {
-            background: #dbeafe;
-            transform: translateX(4px);
-        }
-        .aula-item div:first-child strong { font-size: 1rem; font-weight: 600; color: #1e293b; }
+        .right-section { display: flex; gap: 16px; align-items: center; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 28px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 20px; margin-bottom: 32px; }
+        .stat-card { background: rgba(240,249,255,0.95); padding: 22px; border-radius: 28px; text-align: center; border: 1px solid rgba(59,130,246,0.3); }
+        .stat-number { font-size: 34px; font-weight: 700; color: #1e40af; }
+        .section { background: rgba(248,250,252,0.95); border-radius: 32px; padding: 24px; margin-bottom: 28px; border: 1px solid rgba(59,130,246,0.25); }
+        .section-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .btn-primary { background: linear-gradient(135deg,#1e40af,#3b82f6); color: white; border: none; padding: 10px 24px; border-radius: 60px; cursor: pointer; }
+        .btn-secondary { background: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; }
+        .btn-danger { background: #dc2626; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; }
+        .aula-item, .file-item { background: #eff6ff; padding: 16px 20px; border-radius: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .actions { display: flex; gap: 10px; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 32px;
-            max-width: 500px;
-            width: 90%;
-            padding: 28px;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #1e40af;
-        }
+        .modal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 32px; max-width: 500px; width: 90%; padding: 28px; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 0.8rem; }
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 28px;
-            font-size: 0.9rem;
-        }
-        .form-group input:focus { outline: none; border-color: #3b82f6; }
+        .form-group input { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 28px; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-
-        .loader {
-            position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7);
-            display: none; align-items: center; justify-content: center; z-index: 2000;
-        }
+        .loader { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
         .loader.show { display: flex; }
-        .spinner {
-            width: 48px; height: 48px; border: 4px solid #e2e8f0;
-            border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite;
-        }
+        .spinner { width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .progress-item {
-            background: #f0f7ff;
-            padding: 18px;
-            border-radius: 24px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            font-size: 0.9rem;
-        }
-        .progress-header strong { font-weight: 600; color: #1e40af; }
-        details summary { cursor: pointer; color: #3b82f6; font-weight: 500; font-size: 0.85rem; margin-top: 10px; }
-        .back-btn { margin-bottom: 20px; }
-        
-        #initialLoader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .initial-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        .initial-loader-text {
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
+        .progress-item { background: #f0f7ff; padding: 18px; border-radius: 24px; margin-bottom: 16px; }
+        details summary { cursor: pointer; color: #3b82f6; margin-top: 10px; }
+        #initialLoader { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg,#1e40af,#3b82f6); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+        .initial-spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
     </style>
 </head>
 <body>
-    <div id="initialLoader">
-        <div class="initial-spinner"></div>
-        <div class="initial-loader-text">AULA ONAPC</div>
-        <div class="initial-loader-text" style="font-size: 0.8rem; opacity: 0.8;">Cargando panel de control...</div>
-    </div>
-
+    <div id="initialLoader"><div class="initial-spinner"></div><div style="color:white;">Cargando panel de control...</div></div>
     <div class="navbar">
         <h2>📚 AULA ONAPC - Panel de Control</h2>
         <div class="right-section">
@@ -265,407 +74,80 @@
             <button class="logout-btn" onclick="logout()">🚪 Salir</button>
         </div>
     </div>
-
     <div class="container">
         <div class="stats">
             <div class="stat-card"><div class="stat-number" id="totalAulas">0</div><div>Total Aulas</div></div>
             <div class="stat-card"><div class="stat-number" id="totalArchivos">0</div><div>Total Archivos</div></div>
             <div class="stat-card"><div class="stat-number" id="totalEstudiantes">0</div><div>Estudiantes</div></div>
         </div>
-
         <div id="aulasSection" class="section">
-            <div class="section-header">
-                <h3>📖 Gestión de Aulas</h3>
-                <button class="btn-primary" onclick="mostrarModalAula()">+ Nueva Aula</button>
-            </div>
+            <div class="section-header"><h3>📖 Gestión de Aulas</h3><button class="btn-primary" onclick="mostrarModalAula()">+ Nueva Aula</button></div>
             <div id="aulasList"></div>
         </div>
-
         <div id="filesSection" class="section" style="display: none;">
             <button class="btn-secondary back-btn" onclick="volverAulas()">← Volver a Aulas</button>
-            <div class="section-header">
-                <h3 id="aulaActualTitle"></h3>
-                <button class="btn-primary" onclick="mostrarModalArchivo()">+ Cargar Archivo</button>
-            </div>
+            <div class="section-header"><h3 id="aulaActualTitle"></h3><button class="btn-primary" onclick="mostrarModalArchivo()">+ Cargar Archivo</button></div>
             <div id="filesList"></div>
         </div>
-
-        <div class="section">
-            <div class="section-header"><h3>📊 Progreso de Estudiantes</h3></div>
-            <div id="progressList"></div>
-        </div>
+        <div class="section"><div class="section-header"><h3>📊 Progreso de Estudiantes</h3></div><div id="progressList"></div></div>
     </div>
-
-    <div id="aulaModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><span>📁 Nueva Aula</span><button onclick="cerrarModal('aulaModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button></div>
-            <form id="aulaForm">
-                <div class="form-group"><label>Nombre del Aula</label><input type="text" id="aulaName" required></div>
-                <input type="hidden" id="editAulaId">
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="cerrarModal('aulaModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="fileModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><span>📄 Archivo</span><button onclick="cerrarModal('fileModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button></div>
-            <form id="fileForm">
-                <div class="form-group"><label>Título</label><input type="text" id="fileTitle" required></div>
-                <div class="form-group"><label>URL del Archivo</label><input type="url" id="fileUrl" required placeholder="https://..."></div>
-                <input type="hidden" id="editFileId">
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="cerrarModal('fileModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <div id="aulaModal" class="modal"><div class="modal-content"><div class="modal-header" style="display:flex;justify-content:space-between;"><span>📁 Nueva Aula</span><button onclick="cerrarModal('aulaModal')" style="background:none;border:none;font-size:28px;">&times;</button></div>
+    <form id="aulaForm"><div class="form-group"><label>Nombre</label><input type="text" id="aulaName" required></div><input type="hidden" id="editAulaId"><div class="modal-footer"><button type="button" class="btn-secondary" onclick="cerrarModal('aulaModal')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
+    <div id="fileModal" class="modal"><div class="modal-content"><div class="modal-header" style="display:flex;justify-content:space-between;"><span>📄 Archivo</span><button onclick="cerrarModal('fileModal')" style="background:none;border:none;font-size:28px;">&times;</button></div>
+    <form id="fileForm"><div class="form-group"><label>Título</label><input type="text" id="fileTitle" required></div><div class="form-group"><label>URL</label><input type="url" id="fileUrl" required></div><input type="hidden" id="editFileId"><div class="modal-footer"><button type="button" class="btn-secondary" onclick="cerrarModal('fileModal')">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form></div></div>
     <div id="loader" class="loader"><div class="spinner"></div></div>
-
     <script>
-        // Reloj en tiempo real
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const clockElement = document.getElementById('realTimeClock');
-            if (clockElement) {
-                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
-            }
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
-        
-        // Funciones auxiliares
-        function getBaseUrl() {
-            return window.location.href.split('?')[0];
-        }
-
-        function redirectToLogin() {
-            window.location.replace(getBaseUrl() + '?path=index');
-        }
-
-        function showMessage(message) {
-            alert('AULA ONAPC dice:\n' + message);
-        }
-
-        // Verificar sesión admin
+        function updateClock() { document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES'); }
+        updateClock(); setInterval(updateClock, 1000);
+        function getBaseUrl() { return window.location.href.split('?')[0]; }
+        function redirectToLogin() { window.location.href = 'index.html'; }
         (function verificarSesion() {
-            const sesionAdminActiva = sessionStorage.getItem('adminSessionActive');
-            const sessionStart = sessionStorage.getItem('adminSessionStart');
-            const OCHO_HORAS = 28800000;
-            
-            if (!sesionAdminActiva || sesionAdminActiva !== 'true') {
-                redirectToLogin();
-                return;
-            }
-            
-            if (sessionStart && (Date.now() - parseInt(sessionStart) > OCHO_HORAS)) {
-                sessionStorage.removeItem('adminSessionActive');
-                sessionStorage.removeItem('adminSessionStart');
-                redirectToLogin();
-                return;
-            }
-            
+            if(sessionStorage.getItem('adminSessionActive') !== 'true') { redirectToLogin(); return; }
+            let start = sessionStorage.getItem('adminSessionStart');
+            if(start && (Date.now() - parseInt(start)) > 28800000) { sessionStorage.clear(); redirectToLogin(); }
             sessionStorage.setItem('adminSessionStart', Date.now().toString());
         })();
-
-        // Datos de ejemplo
-        let aulas = [
-            {
-                id: '1',
-                name: 'Matemáticas Avanzadas',
-                files: [
-                    { id: 'f1', title: 'Álgebra Lineal', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-                    { id: 'f2', title: 'Cálculo Diferencial', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
-                ]
-            },
-            {
-                id: '2',
-                name: 'Programación Web',
-                files: [
-                    { id: 'f3', title: 'Introducción a HTML', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-                    { id: 'f4', title: 'CSS Avanzado', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
-                ]
-            }
-        ];
-
-        let progresoEstudiantes = {
-            'estudiante1@email.com': {
-                sessions: [
-                    {
-                        sessionId: 's1',
-                        sessionStart: '2025-01-15T10:00:00',
-                        sessionEnd: '2025-01-15T11:30:00',
-                        aulasVisited: [
-                            { aulaId: '1', aulaName: 'Matemáticas Avanzadas', materialsViewed: ['f1', 'f2'] }
-                        ]
-                    }
-                ]
-            },
-            'estudiante2@email.com': {
-                sessions: [
-                    {
-                        sessionId: 's2',
-                        sessionStart: '2025-01-16T14:00:00',
-                        sessionEnd: '2025-01-16T15:15:00',
-                        aulasVisited: [
-                            { aulaId: '2', aulaName: 'Programación Web', materialsViewed: ['f3'] }
-                        ]
-                    }
-                ]
-            }
-        };
-
-        let aulaActualId = null;
-        let vistaActual = 'aulas';
-
-        function mostrarLoader(show) { 
-            const el = document.getElementById('loader'); 
-            if (show) el.classList.add('show'); 
-            else el.classList.remove('show'); 
-        }
-        
-        function generarId() { 
-            return Date.now() + '_' + Math.random().toString(36).substr(2, 9); 
-        }
-        
-        function escapar(texto) { 
-            if(!texto) return ''; 
-            return texto.replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); 
-        }
-        
-        function cerrarModal(id) { 
-            document.getElementById(id).style.display = 'none'; 
-        }
-
-        function guardarDatos() {
-            // Guardar en localStorage para persistencia local
-            localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-            localStorage.setItem('progreso_onapc', JSON.stringify(progresoEstudiantes));
-        }
-
-        function cargarDatos() {
-            const aulasGuardadas = localStorage.getItem('aulas_onapc');
-            const progresoGuardado = localStorage.getItem('progreso_onapc');
-            
-            if (aulasGuardadas) {
-                aulas = JSON.parse(aulasGuardadas);
-            }
-            if (progresoGuardado) {
-                progresoEstudiantes = JSON.parse(progresoGuardado);
-            }
-        }
-
+        let aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
+        let progreso = JSON.parse(localStorage.getItem('progreso_onapc') || '{"estudiante@email.com":{"sessions":[{"sessionId":"s1","sessionStart":"2025-01-15T10:00:00","aulasVisited":[{"aulaId":"1","aulaName":"Matemáticas","materialsViewed":["f1"]}]}]}}');
+        function guardarDatos() { localStorage.setItem('aulas_onapc', JSON.stringify(aulas)); localStorage.setItem('progreso_onapc', JSON.stringify(progreso)); }
+        let aulaActualId = null, vistaActual = 'aulas';
+        function generarId() { return Date.now() + '_' + Math.random().toString(36).substr(2,6); }
+        function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+        function mostrarLoader(show) { document.getElementById('loader').classList.toggle('show', show); }
         function renderizarAulas() {
-            const container = document.getElementById('aulasList');
-            if(!aulas.length) { 
-                container.innerHTML = '<p style="text-align:center;padding:32px;color:#64748b;">📭 No hay aulas creadas</p>'; 
-                return; 
-            }
-            let html = '';
-            aulas.forEach(a => { 
-                html += `<div class="aula-item">
-                            <div>
-                                <strong>${escapar(a.name)}</strong>
-                                <br><span style="font-size:12px;color:#64748b;">📄 ${a.files?.length || 0} archivos</span>
-                            </div>
-                            <div class="actions">
-                                <button class="btn-primary" onclick="entrarAula('${a.id}')" style="padding:6px 16px;">📂 Ver</button>
-                                <button class="btn-secondary" onclick="editarAula('${a.id}')" style="padding:6px 16px;">✏️</button>
-                                <button class="btn-danger" onclick="eliminarAula('${a.id}')" style="padding:6px 16px;">🗑️</button>
-                            </div>
-                        </div>`; 
-            });
-            container.innerHTML = html;
-            actualizarStats();
+            let html = aulas.length ? '' : '<p style="text-align:center;padding:32px;">📭 No hay aulas</p>';
+            aulas.forEach(a => { html += `<div class="aula-item"><div><strong>${escapar(a.name)}</strong><br><span style="font-size:12px;">📄 ${a.files?.length||0} archivos</span></div><div class="actions"><button class="btn-primary" onclick="entrarAula('${a.id}')">📂 Ver</button><button class="btn-secondary" onclick="editarAula('${a.id}')">✏️</button><button class="btn-danger" onclick="eliminarAula('${a.id}')">🗑️</button></div></div>`; });
+            document.getElementById('aulasList').innerHTML = html;
+            document.getElementById('totalAulas').innerText = aulas.length;
+            document.getElementById('totalArchivos').innerText = aulas.reduce((s,a)=> s + (a.files?.length||0),0);
+            document.getElementById('totalEstudiantes').innerText = Object.keys(progreso).length;
         }
-
         function renderizarArchivos() {
-            const aula = aulas.find(a => a.id === aulaActualId);
-            const container = document.getElementById('filesList');
-            if(!aula || !aula.files?.length) { 
-                container.innerHTML = '<p style="text-align:center;padding:32px;color:#64748b;">📭 No hay archivos en esta aula</p>'; 
-                return; 
-            }
-            let html = '';
-            aula.files.forEach(f => { 
-                html += `<div class="file-item">
-                            <div>
-                                <strong>${escapar(f.title)}</strong>
-                                <br><span style="font-size:11px;color:#94a3b8;">${escapar(f.url)}</span>
-                            </div>
-                            <div class="actions">
-                                <a href="${escapar(f.url)}" target="_blank" class="btn-primary" style="text-decoration:none;padding:6px 16px;">👁️ Ver</a>
-                                <button class="btn-secondary" onclick="editarArchivo('${f.id}')" style="padding:6px 16px;">✏️</button>
-                                <button class="btn-danger" onclick="eliminarArchivo('${f.id}')" style="padding:6px 16px;">🗑️</button>
-                            </div>
-                        </div>`; 
-            });
-            container.innerHTML = html;
+            let aula = aulas.find(a=>a.id===aulaActualId);
+            let html = (!aula || !aula.files?.length) ? '<p style="text-align:center;padding:32px;">📭 No hay archivos</p>' : '';
+            aula?.files.forEach(f => { html += `<div class="file-item"><div><strong>${escapar(f.title)}</strong><br><span style="font-size:11px;">${escapar(f.url)}</span></div><div class="actions"><a href="${escapar(f.url)}" target="_blank" class="btn-primary" style="text-decoration:none;">👁️ Ver</a><button class="btn-secondary" onclick="editarArchivo('${f.id}')">✏️</button><button class="btn-danger" onclick="eliminarArchivo('${f.id}')">🗑️</button></div></div>`; });
+            document.getElementById('filesList').innerHTML = html;
         }
-
         function renderizarProgreso() {
-            const container = document.getElementById('progressList');
-            const estudiantes = Object.keys(progresoEstudiantes);
-            document.getElementById('totalEstudiantes').innerText = estudiantes.length;
-            if(!estudiantes.length) { 
-                container.innerHTML = '<p style="text-align:center;padding:32px;color:#64748b;">📊 No hay estudiantes registrados</p>'; 
-                return; 
-            }
             let html = '';
-            estudiantes.forEach(email => {
-                const data = progresoEstudiantes[email];
-                const sessions = data.sessions || [];
-                html += `<div class="progress-item">
-                            <div class="progress-header">
-                                <strong>📧 ${escapar(email)}</strong>
-                                <span>📊 Sesiones: ${sessions.length}</span>
-                            </div>
-                            <details>
-                                <summary>Ver detalles</summary>
-                                <div style="margin-top:12px;">
-                                    ${sessions.map((s, idx) => `<div style="margin-bottom:10px;padding:10px;background:white;border-radius:20px;font-size:0.85rem;">
-                                        <p><strong>Sesión ${idx+1}</strong> - ${new Date(s.sessionStart).toLocaleString()}</p>
-                                        <p>Aulas visitadas: ${s.aulasVisited?.length || 0}</p>
-                                        <p>Materiales vistos: ${s.aulasVisited?.reduce((acc, a) => acc + (a.materialsViewed?.length || 0), 0) || 0}</p>
-                                    </div>`).join('')}
-                                </div>
-                            </details>
-                        </div>`;
+            Object.entries(progreso).forEach(([email, data]) => {
+                html += `<div class="progress-item"><strong>📧 ${escapar(email)}</strong> - Sesiones: ${data.sessions?.length||0}<details><summary>Ver</summary>${data.sessions?.map((s,i)=>`<div>Sesión ${i+1}: ${new Date(s.sessionStart).toLocaleString()}<br>Aulas: ${s.aulasVisited?.length||0}</div>`).join('')}</details></div>`;
             });
-            container.innerHTML = html;
+            document.getElementById('progressList').innerHTML = html || '<p style="text-align:center;padding:32px;">📊 Sin estudiantes</p>';
         }
-
-        function actualizarStats() {
-            const totalAulas = aulas.length;
-            const totalArchivos = aulas.reduce((acc, a) => acc + (a.files?.length || 0), 0);
-            document.getElementById('totalAulas').innerText = totalAulas;
-            document.getElementById('totalArchivos').innerText = totalArchivos;
-        }
-
-        function mostrarModalAula(editId = null) {
-            document.getElementById('aulaName').value = editId ? aulas.find(a => a.id === editId).name : '';
-            document.getElementById('editAulaId').value = editId || '';
-            document.getElementById('aulaModal').style.display = 'flex';
-        }
-        
+        function entrarAula(id) { aulaActualId = id; vistaActual='files'; document.getElementById('aulaActualTitle').innerHTML = `📖 ${escapar(aulas.find(a=>a.id===id).name)}`; document.getElementById('aulasSection').style.display='none'; document.getElementById('filesSection').style.display='block'; renderizarArchivos(); }
+        function volverAulas() { vistaActual='aulas'; aulaActualId=null; document.getElementById('aulasSection').style.display='block'; document.getElementById('filesSection').style.display='none'; renderizarAulas(); }
+        function mostrarModalAula(editId=null) { document.getElementById('aulaName').value = editId ? aulas.find(a=>a.id===editId).name : ''; document.getElementById('editAulaId').value = editId||''; document.getElementById('aulaModal').style.display='flex'; }
         function editarAula(id) { mostrarModalAula(id); }
-        
-        document.getElementById('aulaForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('aulaName').value.trim();
-            const editId = document.getElementById('editAulaId').value;
-            if(!name) return;
-            if(editId) { 
-                const idx = aulas.findIndex(a => a.id === editId); 
-                if(idx !== -1) aulas[idx].name = name; 
-            } else { 
-                aulas.push({ id: generarId(), name, files: [] }); 
-            }
-            guardarDatos();
-            renderizarAulas(); 
-            if(vistaActual === 'files') renderizarArchivos(); 
-            cerrarModal('aulaModal');
-        });
-        
-        async function eliminarAula(id) {
-            if(!confirm('AULA ONAPC dice:\n¿Eliminar esta aula y todos sus archivos?')) return;
-            aulas = aulas.filter(a => a.id !== id);
-            if(aulaActualId === id) volverAulas();
-            guardarDatos();
-            renderizarAulas();
-        }
-
-        function entrarAula(id) { 
-            aulaActualId = id; 
-            vistaActual = 'files'; 
-            const aula = aulas.find(a => a.id === id); 
-            document.getElementById('aulaActualTitle').innerHTML = `📖 ${escapar(aula.name)}`; 
-            document.getElementById('aulasSection').style.display = 'none'; 
-            document.getElementById('filesSection').style.display = 'block'; 
-            renderizarArchivos(); 
-        }
-        
-        function volverAulas() { 
-            vistaActual = 'aulas'; 
-            aulaActualId = null; 
-            document.getElementById('aulasSection').style.display = 'block'; 
-            document.getElementById('filesSection').style.display = 'none'; 
-            renderizarAulas(); 
-        }
-        
-        function mostrarModalArchivo(fileId = null) {
-            const aula = aulas.find(a => a.id === aulaActualId);
-            if(fileId) { 
-                const f = aula.files.find(f => f.id === fileId); 
-                document.getElementById('fileTitle').value = f.title; 
-                document.getElementById('fileUrl').value = f.url; 
-                document.getElementById('editFileId').value = fileId; 
-            } else { 
-                document.getElementById('fileTitle').value = ''; 
-                document.getElementById('fileUrl').value = ''; 
-                document.getElementById('editFileId').value = ''; 
-            }
-            document.getElementById('fileModal').style.display = 'flex';
-        }
-        
-        function editarArchivo(fileId) { mostrarModalArchivo(fileId); }
-        
-        document.getElementById('fileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const title = document.getElementById('fileTitle').value.trim();
-            const url = document.getElementById('fileUrl').value.trim();
-            const editId = document.getElementById('editFileId').value;
-            const aula = aulas.find(a => a.id === aulaActualId);
-            if(!aula) return;
-            if(editId) { 
-                const idx = aula.files.findIndex(f => f.id === editId); 
-                if(idx !== -1) { 
-                    aula.files[idx].title = title; 
-                    aula.files[idx].url = url; 
-                } 
-            } else { 
-                aula.files.push({ id: generarId(), title, url }); 
-            }
-            guardarDatos();
-            renderizarArchivos(); 
-            cerrarModal('fileModal');
-        });
-        
-        async function eliminarArchivo(fileId) {
-            if(!confirm('AULA ONAPC dice:\n¿Eliminar este archivo?')) return;
-            const aula = aulas.find(a => a.id === aulaActualId);
-            if(aula) { 
-                aula.files = aula.files.filter(f => f.id !== fileId); 
-                guardarDatos();
-                renderizarArchivos();
-            }
-        }
-
-        function logout() {
-            sessionStorage.removeItem('adminSessionActive');
-            sessionStorage.removeItem('adminSessionStart');
-            sessionStorage.removeItem('studentEmail');
-            localStorage.removeItem('studentEmail');
-            window.location.replace(getBaseUrl() + '?path=index');
-        }
-
-        // Inicialización
-        cargarDatos();
-        renderizarAulas();
-        renderizarProgreso();
-        
-        // Ocultar loader después de 1 segundo
-        setTimeout(() => {
-            document.getElementById('initialLoader').style.display = 'none';
-        }, 1000);
+        document.getElementById('aulaForm').onsubmit = (e) => { e.preventDefault(); let name = document.getElementById('aulaName').value.trim(), id = document.getElementById('editAulaId').value; if(!name) return; if(id) { let idx = aulas.findIndex(a=>a.id===id); if(idx!==-1) aulas[idx].name = name; } else { aulas.push({ id:generarId(), name, files:[] }); } guardarDatos(); renderizarAulas(); cerrarModal('aulaModal'); };
+        async function eliminarAula(id) { if(!confirm('¿Eliminar aula?')) return; aulas = aulas.filter(a=>a.id!==id); if(aulaActualId===id) volverAulas(); guardarDatos(); renderizarAulas(); }
+        function mostrarModalArchivo(fileId=null) { let aula = aulas.find(a=>a.id===aulaActualId); if(fileId) { let f = aula.files.find(f=>f.id===fileId); document.getElementById('fileTitle').value = f.title; document.getElementById('fileUrl').value = f.url; document.getElementById('editFileId').value = fileId; } else { document.getElementById('fileTitle').value = ''; document.getElementById('fileUrl').value = ''; document.getElementById('editFileId').value = ''; } document.getElementById('fileModal').style.display='flex'; }
+        function editarArchivo(id) { mostrarModalArchivo(id); }
+        document.getElementById('fileForm').onsubmit = (e) => { e.preventDefault(); let title = document.getElementById('fileTitle').value.trim(), url = document.getElementById('fileUrl').value.trim(), id = document.getElementById('editFileId').value, aula = aulas.find(a=>a.id===aulaActualId); if(!aula) return; if(id) { let idx = aula.files.findIndex(f=>f.id===id); if(idx!==-1) { aula.files[idx].title = title; aula.files[idx].url = url; } } else { aula.files.push({ id:generarId(), title, url }); } guardarDatos(); renderizarArchivos(); cerrarModal('fileModal'); };
+        async function eliminarArchivo(id) { if(!confirm('¿Eliminar archivo?')) return; let aula = aulas.find(a=>a.id===aulaActualId); if(aula) { aula.files = aula.files.filter(f=>f.id!==id); guardarDatos(); renderizarArchivos(); } }
+        function logout() { sessionStorage.clear(); localStorage.removeItem('studentEmail'); window.location.href = 'index.html'; }
+        renderizarAulas(); renderizarProgreso(); setTimeout(()=>document.getElementById('initialLoader').style.display='none', 800);
     </script>
 </body>
 </html>
