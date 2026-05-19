@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Acceso</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-image: url('https://lh3.googleusercontent.com/d/1NpP99FHG2AyA8pXlPLtdU7i14S7dTjp7=w1920-h1080');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -40,21 +36,10 @@
             color: white;
         }
 
-        .login-header h1 {
-            font-size: 26px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
+        .login-header h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+        .login-header p { font-size: 13px; opacity: 0.88; }
 
-        .login-header p {
-            font-size: 13px;
-            opacity: 0.88;
-        }
-
-        .login-body {
-            padding: 36px 32px;
-            background: white;
-        }
+        .login-body { padding: 36px 32px; background: white; }
 
         .role-buttons {
             display: flex;
@@ -71,7 +56,6 @@
             cursor: pointer;
             font-weight: 500;
             font-size: 0.85rem;
-            transition: all 0.2s ease;
             color: #1e40af;
         }
 
@@ -81,10 +65,7 @@
             border-color: transparent;
         }
 
-        .form-group {
-            margin-bottom: 22px;
-        }
-
+        .form-group { margin-bottom: 22px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -92,24 +73,19 @@
             color: #334155;
             font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-
         .form-group input {
             width: 100%;
             padding: 14px 16px;
             border: 1.5px solid #e2e8f0;
             border-radius: 28px;
             font-size: 0.95rem;
-            transition: all 0.2s;
             background: #fefcf5;
         }
-
         .form-group input:focus {
             outline: none;
             border-color: #3b82f6;
             background: white;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .login-btn {
@@ -122,19 +98,10 @@
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
             margin-top: 8px;
         }
-
-        .login-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .login-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
+        .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .error-msg {
             background: #fef2f2;
@@ -144,7 +111,6 @@
             margin-top: 20px;
             text-align: center;
             font-size: 0.8rem;
-            font-weight: 500;
             display: none;
         }
 
@@ -168,15 +134,7 @@
             margin-right: 8px;
             vertical-align: middle;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 540px) {
-            .login-header { padding: 28px 24px; }
-            .login-body { padding: 28px 24px; }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -203,10 +161,7 @@
                     <input type="password" id="password" placeholder="••••••••">
                 </div>
 
-                <button type="submit" class="login-btn" id="loginBtn">
-                    Ingresar al Aula
-                </button>
-
+                <button type="submit" class="login-btn" id="loginBtn">Ingresar al Aula</button>
                 <div class="error-msg" id="errorMsg"></div>
             </form>
         </div>
@@ -217,109 +172,75 @@
     </div>
 
     <script>
-        // Credenciales del administrador
         const ADMIN_EMAIL = 'admin';
         const ADMIN_PASSWORD = '58ky8gu6';
-
         let currentRole = 'student';
 
-        // Obtener la URL base (sin el ?path=...)
-        function getBaseUrl() {
-            return window.location.href.split('?')[0];
-        }
-
-        // Mostrar mensajes amigables
-        function showMessage(message) {
-            alert('AULA ONAPC dice:\n' + message);
-        }
-
-        // --- Lógica de la interfaz (cambiar entre Estudiante y Profesor) ---
         document.querySelectorAll('.role-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentRole = this.getAttribute('data-role');
-                
                 const pwdGroup = document.getElementById('passwordGroup');
-                if (currentRole === 'admin') {
-                    pwdGroup.style.display = 'block';
-                } else {
-                    pwdGroup.style.display = 'none';
-                    document.getElementById('password').value = '';
-                }
+                pwdGroup.style.display = currentRole === 'admin' ? 'block' : 'none';
+                if (currentRole === 'student') document.getElementById('password').value = '';
                 document.getElementById('errorMsg').style.display = 'none';
             });
         });
 
-        // --- Envío del formulario (autenticación local) ---
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('errorMsg');
             const loginBtn = document.getElementById('loginBtn');
             
-            // Validaciones básicas
             if (!email) {
                 errorDiv.textContent = 'Ingresa tu correo electrónico';
                 errorDiv.style.display = 'block';
                 return;
             }
-            
             if (currentRole === 'admin' && !password) {
                 errorDiv.textContent = 'Ingresa la contraseña';
                 errorDiv.style.display = 'block';
                 return;
             }
             
-            // Mostrar spinner y deshabilitar botón
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="spinner"></span> Conectando...';
             errorDiv.style.display = 'none';
             
-            // Simular una pequeña pausa para el efecto visual
             setTimeout(() => {
-                // --- Autenticación para ADMINISTRADOR ---
                 if (currentRole === 'admin') {
                     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-                        // Guardar sesión de administrador
                         sessionStorage.setItem('adminSessionActive', 'true');
                         sessionStorage.setItem('adminSessionStart', Date.now().toString());
-                        // Limpiar posible sesión de estudiante previa
                         sessionStorage.removeItem('studentEmail');
                         localStorage.removeItem('studentEmail');
-                        // Redirigir al panel de administración
-                        window.location.href = getBaseUrl() + '?path=admin';
+                        // REDIRECCIÓN DIRECTA a admin.html
+                        window.location.href = 'admin.html';
                     } else {
-                        // Error de credenciales
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        errorDiv.textContent = 'Credenciales de administrador incorrectas';
+                        errorDiv.textContent = 'Credenciales incorrectas';
                         errorDiv.style.display = 'block';
-                        showMessage('Credenciales de administrador incorrectas');
                     }
-                } 
-                // --- Autenticación para ESTUDIANTE (cualquier email válido) ---
-                else if (currentRole === 'student') {
+                } else if (currentRole === 'student') {
                     if (email && email.includes('@')) {
-                        // Guardar sesión de estudiante
                         sessionStorage.setItem('studentEmail', email);
                         localStorage.setItem('studentEmail', email);
-                        // Limpiar posible sesión de administrador previa
                         sessionStorage.removeItem('adminSessionActive');
                         sessionStorage.removeItem('adminSessionStart');
-                        // Redirigir al panel de estudiante
-                        window.location.href = getBaseUrl() + '?path=student';
+                        // REDIRECCIÓN DIRECTA a student.html
+                        window.location.href = 'student.html';
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        errorDiv.textContent = 'Ingresa un correo electrónico válido';
+                        errorDiv.textContent = 'Correo electrónico inválido';
                         errorDiv.style.display = 'block';
-                        showMessage('Ingresa un correo electrónico válido');
                     }
                 }
-            }, 500); // Pequeño delay para que se vea el spinner
+            }, 500);
         });
     </script>
 </body>
