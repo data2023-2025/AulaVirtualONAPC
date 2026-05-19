@@ -218,9 +218,16 @@
 
     <script>
         let currentRole = 'student';
+        
+        // Credenciales del admin
+        const ADMIN_CREDENTIALS = {
+            email: 'admin',
+            password: '58ky8gu6'
+        };
 
         function getBaseUrl() {
-            return window.location.href.split('?')[0];
+            const currentUrl = window.location.href;
+            return currentUrl.split('?')[0];
         }
 
         function showMessage(message) {
@@ -268,45 +275,63 @@
             loginBtn.innerHTML = '<span class="spinner"></span> Conectando...';
             errorDiv.style.display = 'none';
             
-            // Autenticar
-            google.script.run
-                .withSuccessHandler(function(result) {
-                    if (result && result.success) {
-                        // Guardar sesión
-                        if (result.role === 'student') {
-                            sessionStorage.setItem('studentEmail', result.email);
-                            localStorage.setItem('studentEmail', result.email);
-                        } else if (result.role === 'admin') {
-                            sessionStorage.setItem('adminSessionActive', 'true');
-                            sessionStorage.setItem('adminSessionStart', Date.now().toString());
-                        }
-
-                        // Redirigir
-                        const baseUrl = getBaseUrl();
-                        if (result.role === 'admin') {
-                            window.top.location.href = baseUrl + '?path=admin';
-                        } else {
-                            window.top.location.href = baseUrl + '?path=student';
-                        }
+            // Simular un pequeño delay para mostrar el spinner
+            setTimeout(() => {
+                // Autenticación local para admin
+                if (currentRole === 'admin') {
+                    if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+                        // Guardar sesión de admin
+                        sessionStorage.setItem('adminSessionActive', 'true');
+                        sessionStorage.setItem('adminSessionStart', Date.now().toString());
+                        sessionStorage.removeItem('studentEmail');
+                        localStorage.removeItem('studentEmail');
+                        
+                        // Redirigir al panel admin
+                        window.location.href = getBaseUrl() + '?path=admin';
                     } else {
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = 'Ingresar al Aula';
-                        let errorMsg = result.error || 'Error de autenticación';
-                        errorDiv.textContent = errorMsg;
+                        errorDiv.textContent = 'Credenciales de administrador incorrectas';
                         errorDiv.style.display = 'block';
-                        showMessage(errorMsg);
+                        showMessage('Credenciales de administrador incorrectas');
                     }
-                })
-                .withFailureHandler(function(err) {
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Ingresar al Aula';
-                    let errorMsg = 'Error de conexión: ' + (err.message || err);
-                    errorDiv.textContent = errorMsg;
-                    errorDiv.style.display = 'block';
-                    showMessage(errorMsg);
-                })
-                .loginUser(email, password, currentRole);
+                } 
+                else if (currentRole === 'student') {
+                    // Para estudiantes, cualquier email es válido (simulación)
+                    if (email && email.includes('@')) {
+                        // Guardar sesión de estudiante
+                        sessionStorage.setItem('studentEmail', email);
+                        localStorage.setItem('studentEmail', email);
+                        sessionStorage.removeItem('adminSessionActive');
+                        sessionStorage.removeItem('adminSessionStart');
+                        
+                        // Redirigir al panel estudiante
+                        window.location.href = getBaseUrl() + '?path=student';
+                    } else {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = 'Ingresar al Aula';
+                        errorDiv.textContent = 'Ingresa un correo electrónico válido';
+                        errorDiv.style.display = 'block';
+                        showMessage('Ingresa un correo electrónico válido');
+                    }
+                }
+            }, 500);
         });
+        
+        // Detectar si hay parámetro de redirección
+        const urlParams = new URLSearchParams(window.location.search);
+        const path = urlParams.get('path');
+        if (path === 'admin') {
+            const adminActive = sessionStorage.getItem('adminSessionActive');
+            if (adminActive === 'true') {
+                window.location.href = getBaseUrl() + '?path=admin';
+            }
+        } else if (path === 'student') {
+            const studentEmail = sessionStorage.getItem('studentEmail');
+            if (studentEmail) {
+                window.location.href = getBaseUrl() + '?path=student';
+            }
+        }
     </script>
 </body>
 </html>
