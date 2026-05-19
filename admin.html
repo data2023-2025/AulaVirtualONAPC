@@ -24,6 +24,7 @@
             align-items: center;
             flex-wrap: wrap;
             border-bottom: 2px solid #3b82f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .navbar h2 { font-size: 1.25rem; font-weight: 600; color: #1e40af; }
@@ -47,6 +48,8 @@
             border-radius: 40px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
         }
         .logout-btn:hover { background: #dbeafe; }
 
@@ -70,9 +73,11 @@
         }
         .stat-card {
             background: rgba(240, 249, 255, 0.95);
+            backdrop-filter: blur(4px);
             padding: 22px;
             border-radius: 28px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.1);
             border: 1px solid rgba(59, 130, 246, 0.3);
         }
         .stat-number { font-size: 34px; font-weight: 700; color: #1e40af; margin-bottom: 6px; }
@@ -80,9 +85,11 @@
 
         .section {
             background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(4px);
             border-radius: 32px;
             padding: 24px;
             margin-bottom: 28px;
+            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.08);
             border: 1px solid rgba(59, 130, 246, 0.25);
         }
         .section-header {
@@ -103,6 +110,8 @@
             border-radius: 60px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
         }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
         .btn-secondary {
@@ -112,6 +121,8 @@
             padding: 8px 20px;
             border-radius: 40px;
             cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
         }
         .btn-danger {
             background: #dc2626;
@@ -120,6 +131,8 @@
             padding: 8px 20px;
             border-radius: 40px;
             cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
         }
 
         .aula-item, .file-item {
@@ -133,8 +146,12 @@
             flex-wrap: wrap;
             gap: 12px;
             border: 1px solid rgba(59, 130, 246, 0.15);
+            transition: all 0.2s;
         }
-        .aula-item:hover, .file-item:hover { background: #dbeafe; }
+        .aula-item:hover, .file-item:hover {
+            background: #dbeafe;
+            transform: translateX(4px);
+        }
         .aula-item div:first-child strong { font-size: 1rem; font-weight: 600; color: #1e293b; }
         .actions { display: flex; gap: 10px; }
 
@@ -198,9 +215,10 @@
             justify-content: space-between;
             margin-bottom: 12px;
             flex-wrap: wrap;
+            font-size: 0.9rem;
         }
         .progress-header strong { font-weight: 600; color: #1e40af; }
-        details summary { cursor: pointer; color: #3b82f6; font-weight: 500; margin-top: 10px; }
+        details summary { cursor: pointer; color: #3b82f6; font-weight: 500; font-size: 0.85rem; margin-top: 10px; }
         .back-btn { margin-bottom: 20px; }
         
         #initialLoader {
@@ -209,7 +227,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: white;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
             z-index: 9999;
             display: flex;
             align-items: center;
@@ -220,17 +238,24 @@
         .initial-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(30,64,175,0.3);
-            border-top-color: #1e40af;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+        }
+        .initial-loader-text {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
     <div id="initialLoader">
         <div class="initial-spinner"></div>
-        <p style="color: #1e40af; font-weight: 500;">Cargando panel de control...</p>
+        <div class="initial-loader-text">AULA ONAPC</div>
+        <div class="initial-loader-text" style="font-size: 0.8rem; opacity: 0.8;">Cargando panel de control...</div>
     </div>
 
     <div class="navbar">
@@ -303,16 +328,21 @@
     <div id="loader" class="loader"><div class="spinner"></div></div>
 
     <script>
-        // Reloj
+        // Reloj en tiempo real
         function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
             const clockElement = document.getElementById('realTimeClock');
             if (clockElement) {
-                clockElement.textContent = new Date().toLocaleTimeString('es-ES');
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
             }
         }
         updateClock();
         setInterval(updateClock, 1000);
-
+        
+        // Funciones auxiliares
         function getBaseUrl() {
             return window.location.href.split('?')[0];
         }
@@ -346,13 +376,60 @@
             sessionStorage.setItem('adminSessionStart', Date.now().toString());
         })();
 
-        let aulas = [];
+        // Datos de ejemplo
+        let aulas = [
+            {
+                id: '1',
+                name: 'Matemáticas Avanzadas',
+                files: [
+                    { id: 'f1', title: 'Álgebra Lineal', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+                    { id: 'f2', title: 'Cálculo Diferencial', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                ]
+            },
+            {
+                id: '2',
+                name: 'Programación Web',
+                files: [
+                    { id: 'f3', title: 'Introducción a HTML', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+                    { id: 'f4', title: 'CSS Avanzado', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                ]
+            }
+        ];
+
+        let progresoEstudiantes = {
+            'estudiante1@email.com': {
+                sessions: [
+                    {
+                        sessionId: 's1',
+                        sessionStart: '2025-01-15T10:00:00',
+                        sessionEnd: '2025-01-15T11:30:00',
+                        aulasVisited: [
+                            { aulaId: '1', aulaName: 'Matemáticas Avanzadas', materialsViewed: ['f1', 'f2'] }
+                        ]
+                    }
+                ]
+            },
+            'estudiante2@email.com': {
+                sessions: [
+                    {
+                        sessionId: 's2',
+                        sessionStart: '2025-01-16T14:00:00',
+                        sessionEnd: '2025-01-16T15:15:00',
+                        aulasVisited: [
+                            { aulaId: '2', aulaName: 'Programación Web', materialsViewed: ['f3'] }
+                        ]
+                    }
+                ]
+            }
+        };
+
         let aulaActualId = null;
         let vistaActual = 'aulas';
 
         function mostrarLoader(show) { 
             const el = document.getElementById('loader'); 
-            show ? el.classList.add('show') : el.classList.remove('show'); 
+            if (show) el.classList.add('show'); 
+            else el.classList.remove('show'); 
         }
         
         function generarId() { 
@@ -368,29 +445,21 @@
             document.getElementById(id).style.display = 'none'; 
         }
 
-        function guardarAulas(data) {
-            return new Promise((resolve, reject) => {
-                google.script.run
-                    .withSuccessHandler(res => { 
-                        if(res.success) resolve(); 
-                        else reject(new Error(res.error)); 
-                    })
-                    .withFailureHandler(reject)
-                    .saveAulas(data);
-            });
+        function guardarDatos() {
+            // Guardar en localStorage para persistencia local
+            localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+            localStorage.setItem('progreso_onapc', JSON.stringify(progresoEstudiantes));
         }
 
-        async function guardarYRefrescar() {
-            mostrarLoader(true);
-            try { 
-                await guardarAulas(aulas); 
-                renderizarAulas(); 
-                if(vistaActual === 'files') renderizarArchivos(); 
-                actualizarStats();
-            } catch(e) { 
-                showMessage('Error: ' + e.message);
-            } finally { 
-                mostrarLoader(false); 
+        function cargarDatos() {
+            const aulasGuardadas = localStorage.getItem('aulas_onapc');
+            const progresoGuardado = localStorage.getItem('progreso_onapc');
+            
+            if (aulasGuardadas) {
+                aulas = JSON.parse(aulasGuardadas);
+            }
+            if (progresoGuardado) {
+                progresoEstudiantes = JSON.parse(progresoGuardado);
             }
         }
 
@@ -442,9 +511,9 @@
             container.innerHTML = html;
         }
 
-        function renderizarProgreso(progressData) {
+        function renderizarProgreso() {
             const container = document.getElementById('progressList');
-            const estudiantes = Object.keys(progressData);
+            const estudiantes = Object.keys(progresoEstudiantes);
             document.getElementById('totalEstudiantes').innerText = estudiantes.length;
             if(!estudiantes.length) { 
                 container.innerHTML = '<p style="text-align:center;padding:32px;color:#64748b;">📊 No hay estudiantes registrados</p>'; 
@@ -452,7 +521,7 @@
             }
             let html = '';
             estudiantes.forEach(email => {
-                const data = progressData[email];
+                const data = progresoEstudiantes[email];
                 const sessions = data.sessions || [];
                 html += `<div class="progress-item">
                             <div class="progress-header">
@@ -465,6 +534,7 @@
                                     ${sessions.map((s, idx) => `<div style="margin-bottom:10px;padding:10px;background:white;border-radius:20px;font-size:0.85rem;">
                                         <p><strong>Sesión ${idx+1}</strong> - ${new Date(s.sessionStart).toLocaleString()}</p>
                                         <p>Aulas visitadas: ${s.aulasVisited?.length || 0}</p>
+                                        <p>Materiales vistos: ${s.aulasVisited?.reduce((acc, a) => acc + (a.materialsViewed?.length || 0), 0) || 0}</p>
                                     </div>`).join('')}
                                 </div>
                             </details>
@@ -488,7 +558,7 @@
         
         function editarAula(id) { mostrarModalAula(id); }
         
-        document.getElementById('aulaForm').addEventListener('submit', async(e) => {
+        document.getElementById('aulaForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('aulaName').value.trim();
             const editId = document.getElementById('editAulaId').value;
@@ -499,15 +569,18 @@
             } else { 
                 aulas.push({ id: generarId(), name, files: [] }); 
             }
-            await guardarYRefrescar();
+            guardarDatos();
+            renderizarAulas(); 
+            if(vistaActual === 'files') renderizarArchivos(); 
             cerrarModal('aulaModal');
         });
         
         async function eliminarAula(id) {
-            if(!confirm('¿Eliminar esta aula y todos sus archivos?')) return;
+            if(!confirm('AULA ONAPC dice:\n¿Eliminar esta aula y todos sus archivos?')) return;
             aulas = aulas.filter(a => a.id !== id);
             if(aulaActualId === id) volverAulas();
-            await guardarYRefrescar();
+            guardarDatos();
+            renderizarAulas();
         }
 
         function entrarAula(id) { 
@@ -545,7 +618,7 @@
         
         function editarArchivo(fileId) { mostrarModalArchivo(fileId); }
         
-        document.getElementById('fileForm').addEventListener('submit', async(e) => {
+        document.getElementById('fileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const title = document.getElementById('fileTitle').value.trim();
             const url = document.getElementById('fileUrl').value.trim();
@@ -561,16 +634,18 @@
             } else { 
                 aula.files.push({ id: generarId(), title, url }); 
             }
-            await guardarYRefrescar();
+            guardarDatos();
+            renderizarArchivos(); 
             cerrarModal('fileModal');
         });
         
         async function eliminarArchivo(fileId) {
-            if(!confirm('¿Eliminar este archivo?')) return;
+            if(!confirm('AULA ONAPC dice:\n¿Eliminar este archivo?')) return;
             const aula = aulas.find(a => a.id === aulaActualId);
             if(aula) { 
                 aula.files = aula.files.filter(f => f.id !== fileId); 
-                await guardarYRefrescar(); 
+                guardarDatos();
+                renderizarArchivos();
             }
         }
 
@@ -583,26 +658,14 @@
         }
 
         // Inicialización
-        (async function init() {
-            google.script.run
-                .withSuccessHandler(res => {
-                    if (res && res.success) {
-                        aulas = res.aulas || [];
-                        renderizarAulas();
-                        renderizarProgreso(res.progress || {});
-                        document.getElementById('initialLoader').style.display = 'none';
-                    } else {
-                        showMessage('Error: ' + (res ? res.error : 'No hay respuesta'));
-                        document.getElementById('initialLoader').style.display = 'none';
-                    }
-                })
-                .withFailureHandler(err => {
-                    console.error('Error:', err);
-                    document.getElementById('initialLoader').style.display = 'none';
-                    showMessage('Error al cargar datos: ' + err.message);
-                })
-                .getAdminInitialData();
-        })();
+        cargarDatos();
+        renderizarAulas();
+        renderizarProgreso();
+        
+        // Ocultar loader después de 1 segundo
+        setTimeout(() => {
+            document.getElementById('initialLoader').style.display = 'none';
+        }, 1000);
     </script>
 </body>
 </html>
