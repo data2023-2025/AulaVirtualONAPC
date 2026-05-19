@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Panel de Control</title>
+    <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self'; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -455,6 +457,131 @@
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
+        // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
+        
+        // Funciones de seguridad y sanitización de entrada
+        const SecurityUtils = {
+            // Sanitización mejorada para prevenir XSS
+            sanitizeInput(input) {
+                if (typeof input !== 'string') return input;
+                return input
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;')
+                    .replace(/\//g, '&#x2F;')
+                    .trim();
+            },
+            
+            // Validación de URLs de materiales
+            validateMaterialUrl(url) {
+                if (!url || typeof url !== 'string') return false;
+                
+                try {
+                    const urlObj = new URL(url);
+                    
+                    // Permitir solo dominios seguros
+                    const allowedDomains = [
+                        'youtube.com', 'youtu.be', 'www.youtube.com',
+                        'vimeo.com', 'player.vimeo.com',
+                        'drive.google.com',
+                        'docs.google.com',
+                        'onedrive.live.com',
+                        '1drv.ms',
+                        'view.officeapps.live.com'
+                    ];
+                    
+                    const domain = urlObj.hostname.toLowerCase();
+                    const isAllowed = allowedDomains.some(allowed => 
+                        domain === allowed || domain.endsWith('.' + allowed)
+                    );
+                    
+                    if (!isAllowed) return false;
+                    
+                    // Prevenir protocolos peligrosos
+                    if (urlObj.protocol !== 'https:' && urlObj.protocol !== 'http:') {
+                        return false;
+                    }
+                    
+                    // Prevenir URLs con javascript: o data:
+                    if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) {
+                        return false;
+                    }
+                    
+                    return true;
+                    
+                } catch (e) {
+                    return false; // URL inválida
+                }
+            },
+            
+            // Validación de nombres de archivos y aulas
+            validateName(name) {
+                if (!name || typeof name !== 'string') return false;
+                if (name.length < 2 || name.length > 100) return false;
+                
+                // Prevenir caracteres peligrosos
+                const dangerousChars = /<|>|script:|javascript:|data:|onerror|onload/i;
+                if (dangerousChars.test(name)) return false;
+                
+                return true;
+            },
+            
+            // Validación de integridad de datos
+            validateDataIntegrity(data) {
+                if (!data || typeof data !== 'object') return false;
+                
+                try {
+                    // Verificar estructura básica
+                    if (Array.isArray(data)) {
+                        return data.every(item => this.validateDataIntegrity(item));
+                    }
+                    
+                    // Verificar campos peligrosos
+                    const checkObject = (obj) => {
+                        for (const key in obj) {
+                            const value = obj[key];
+                            
+                            if (typeof value === 'string') {
+                                // Detectar código potencialmente malicioso
+                                const dangerousPatterns = [
+                                    /<script/i,
+                                    /javascript:/i,
+                                    /data:/i,
+                                    /vbscript:/i,
+                                    /on\w+\s*=/i,
+                                    /eval\(/i
+                                ];
+                                
+                                for (const pattern of dangerousPatterns) {
+                                    if (pattern.test(value)) {
+                                        console.warn('Detectado patrón peligroso en datos:', key, value);
+                                        return false;
+                                    }
+                                }
+                            } else if (typeof value === 'object' && value !== null) {
+                                if (!checkObject(value)) return false;
+                            }
+                        }
+                        return true;
+                    };
+                    
+                    return checkObject(data);
+                    
+                } catch (e) {
+                    console.error('Error en validación de integridad:', e);
+                    return false;
+                }
+            },
+            
+            // Generar IDs seguros
+            generateSecureId() {
+                return Date.now().toString(36) + '_' + 
+                       Math.random().toString(36).substr(2, 9) + '_' + 
+                       Math.random().toString(36).substr(2, 9);
+            }
+        };
+        
         // ============ FUNCIONES BASE ============
         function updateClock() {
             document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES');
@@ -478,29 +605,70 @@
         let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
         
         function guardarDatos() {
-            localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-            localStorage.setItem('progreso_onapc', JSON.stringify(progresoGeneral));
+            try {
+                // Validar integridad antes de guardar
+                if (!SecurityUtils.validateDataIntegrity(aulas)) {
+                    console.error('⚠️ Datos corruptos detectados, no guardando');
+                    alert('❌ Error: Se detectaron datos corruptos. Por favor, contacte al administrador.');
+                    return false;
+                }
+                
+                // Crear backup antes de guardar
+                const currentData = localStorage.getItem('aulas_onapc');
+                if (currentData) {
+                    localStorage.setItem('aulas_onapc_backup', currentData);
+                    localStorage.setItem('aulas_onapc_backup_time', Date.now().toString());
+                }
+                
+                localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+                localStorage.setItem('progreso_onapc', JSON.stringify(progresoGeneral));
+                
+                return true;
+            } catch (e) {
+                console.error('Error guardando datos:', e);
+                alert('❌ Error al guardar datos. Espacio de almacenamiento lleno o error del sistema.');
+                return false;
+            }
         }
         
         let aulaActualId = null;
         
-        function generarId() { return Date.now() + '_' + Math.random().toString(36).substr(2,6); }
-        function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        function generarId() { return SecurityUtils.generateSecureId(); }
+        function escapar(t) { return SecurityUtils.sanitizeInput(t); }
         function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
         
         // ============ RENDERIZADO DE AULAS ============
         function renderizarAulas() {
+            // Validar integridad de datos antes de renderizar
+            if (!SecurityUtils.validateDataIntegrity(aulas)) {
+                console.error('Datos corruptos detectados, restaurando backup...');
+                const backup = localStorage.getItem('aulas_onapc_backup');
+                if (backup) {
+                    try {
+                        aulas = JSON.parse(backup);
+                        guardarDatos();
+                    } catch (e) {
+                        console.error('Error restaurando backup:', e);
+                        aulas = [];
+                    }
+                } else {
+                    aulas = [];
+                }
+            }
+            
             let html = aulas.length ? '' : '<p style="text-align:center;padding:32px;">📭 No hay aulas creadas</p>';
             aulas.forEach(a => {
+                const sanitizedName = SecurityUtils.sanitizeInput(a.name);
+                const safeId = SecurityUtils.sanitizeInput(a.id);
                 html += `<div class="aula-item">
                             <div>
-                                <strong>${escapar(a.name)}</strong>
+                                <strong>${sanitizedName}</strong>
                                 <br><span style="font-size:12px;">📄 ${a.files?.length || 0} materiales</span>
                             </div>
                             <div class="actions">
-                                <button class="btn-primary" onclick="entrarAula('${a.id}')">📂 Ver</button>
-                                <button class="btn-secondary" onclick="editarAula('${a.id}')">✏️ Editar</button>
-                                <button class="btn-danger" onclick="eliminarAula('${a.id}')">🗑️ Eliminar</button>
+                                <button class="btn-primary" onclick="entrarAula('${safeId}')">📂 Ver</button>
+                                <button class="btn-secondary" onclick="editarAula('${safeId}')">✏️ Editar</button>
+                                <button class="btn-danger" onclick="eliminarAula('${safeId}')">🗑️ Eliminar</button>
                             </div>
                          </div>`;
             });
@@ -514,7 +682,9 @@
                 const currentValue = filterSelect.value;
                 filterSelect.innerHTML = '<option value="">Todas las aulas</option>';
                 aulas.forEach(a => {
-                    filterSelect.innerHTML += `<option value="${a.id}" ${currentValue === a.id ? 'selected' : ''}>${escapar(a.name)}</option>`;
+                    const sanitizedName = SecurityUtils.sanitizeInput(a.name);
+                    const safeId = SecurityUtils.sanitizeInput(a.id);
+                    filterSelect.innerHTML += `<option value="${safeId}" ${currentValue === a.id ? 'selected' : ''}>${sanitizedName}</option>`;
                 });
             }
         }
@@ -565,7 +735,16 @@
             e.preventDefault();
             let name = document.getElementById('aulaName').value.trim();
             let id = document.getElementById('editAulaId').value;
-            if (!name) return;
+            
+            // Validación de seguridad
+            if (!SecurityUtils.validateName(name)) {
+                alert('❌ Nombre de aula inválido. Debe tener entre 2 y 100 caracteres y no contener caracteres especiales.');
+                return;
+            }
+            
+            // Sanitizar entrada
+            name = SecurityUtils.sanitizeInput(name);
+            
             if (id) {
                 let idx = aulas.findIndex(a => a.id === id);
                 if (idx !== -1) aulas[idx].name = name;
@@ -614,6 +793,21 @@
             let id = document.getElementById('editFileId').value;
             let aula = aulas.find(a => a.id === aulaActualId);
             if (!aula) return;
+            
+            // Validación de seguridad
+            if (!SecurityUtils.validateName(title)) {
+                alert('❌ Título inválido. Debe tener entre 2 y 100 caracteres y no contener caracteres especiales.');
+                return;
+            }
+            
+            if (!SecurityUtils.validateMaterialUrl(url)) {
+                alert('❌ URL inválida o no permitida. Solo se permiten URLs de YouTube, Vimeo, Google Drive y servicios de documentos seguros.');
+                return;
+            }
+            
+            // Sanitizar entrada
+            title = SecurityUtils.sanitizeInput(title);
+            url = url.trim(); // No sanitizar URLs completamente para preservar funcionalidad
             
             if (id) {
                 let idx = aula.files.findIndex(f => f.id === id);
