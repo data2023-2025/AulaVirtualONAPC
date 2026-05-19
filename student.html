@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AULA ONAPC - Mi Aula Virtual</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-image: url('https://lh3.googleusercontent.com/d/1NpP99FHG2AyA8pXlPLtdU7i14S7dTjp7=w1920-h1080');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Fondo completamente transparente */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.00);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .navbar {
+            position: relative;
+            z-index: 1;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #3b82f6;
+        }
+
+        .navbar h2 { font-size: 1.25rem; font-weight: 600; color: #1e40af; }
+        
+        .clock {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: #eff6ff;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            letter-spacing: 1px;
+        }
+        
+        .logout-btn {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 8px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .logout-btn:hover { background: #dbeafe; }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        .welcome {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 28px 32px;
+            border-radius: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .welcome h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 6px; }
+        .welcome p { font-size: 0.85rem; opacity: 0.9; }
+
+        .aulas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 24px; }
+
+        .aula-card {
+            background: white; 
+            border-radius: 28px; 
+            overflow: hidden; 
+            cursor: pointer;
+            transition: all 0.2s ease; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .aula-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: #3b82f6; }
+
+        .aula-header { background: #f8fafc; padding: 18px 20px; border-bottom: 1px solid #e2e8f0; }
+        .aula-header h3 { font-size: 1.1rem; font-weight: 600; color: #1e40af; }
+
+        .aula-body { padding: 20px; }
+        .aula-body div:first-child { font-size: 0.85rem; color: #64748b; }
+
+        .progress-bar { height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%); border-radius: 10px; transition: width 0.3s; }
+
+        .files-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .file-item {
+            background: white; 
+            padding: 16px 20px; 
+            border-radius: 28px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04); 
+            border: 1px solid #e2e8f0;
+        }
+        .file-item div strong { font-size: 0.95rem; font-weight: 600; color: #1e293b; }
+
+        .view-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            border: none; 
+            color: white; 
+            padding: 8px 24px; 
+            border-radius: 40px;
+            cursor: pointer; 
+            font-weight: 500; 
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .view-btn:hover { transform: scale(1.02); }
+
+        .back-btn {
+            background: #64748b; 
+            color: white; 
+            border: none; 
+            padding: 10px 24px; 
+            border-radius: 40px;
+            cursor: pointer; 
+            margin-bottom: 24px; 
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .empty-state { 
+            text-align: center; 
+            padding: 60px; 
+            background: white; 
+            border-radius: 32px; 
+            color: #64748b; 
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .loader {
+            position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .loader.show { display: flex; }
+        .spinner {
+            width: 48px; height: 48px; border: 4px solid #e2e8f0;
+            border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        #initialLoader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .initial-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #1e40af;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @media (max-width: 720px) { 
+            .container { padding: 20px; } 
+            .welcome { padding: 24px; } 
+            .welcome h1 { font-size: 1.3rem; } 
+        }
+    </style>
+</head>
+<body>
+    <div id="initialLoader">
+        <div class="initial-spinner"></div>
+        <p style="color: #1e40af; font-weight: 500;">Cargando tu aula virtual...</p>
+    </div>
+
+    <div class="navbar">
+        <h2>📚 AULA ONAPC</h2>
+        <div class="right-section">
+            <div class="clock" id="realTimeClock">--:--:--</div>
+            <button class="logout-btn" onclick="logout()">🚪 Salir</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="welcome">
+            <h1>Bienvenido a tu Aula Virtual</h1>
+            <p id="studentEmailDisplay">Cargando...</p>
+        </div>
+        <div id="aulasView"><div id="aulasList" class="aulas-grid"></div></div>
+        <div id="filesView" style="display: none;">
+            <button class="back-btn" onclick="volverAulas()">← Volver a mis aulas</button>
+            <h2 id="aulaTitle" style="margin-bottom: 20px; color: #1e40af; font-size: 1.3rem; font-weight: 600;"></h2>
+            <div id="filesList" class="files-list"></div>
+        </div>
+    </div>
+    <div id="loader" class="loader"><div class="spinner"></div></div>
+
+    <script>
+        // =============================================
+        // RELOJ EN TIEMPO REAL
+        // =============================================
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const clockElement = document.getElementById('realTimeClock');
+            if (clockElement) {
+                clockElement.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        // =============================================
+        // VERIFICACIÓN DE AUTENTICACIÓN - ESTUDIANTE
+        // =============================================
+        
+        // Función para obtener la URL base (sin parámetros)
+        function getBaseUrl() {
+            const currentUrl = window.location.href;
+            // Remover parámetros de query
+            return currentUrl.split('?')[0];
+        }
+        
+        function redirectToLogin() {
+            window.location.replace(getBaseUrl() + '?path=index');
+        }
+        
+        function hideInitialLoader() {
+            const loader = document.getElementById('initialLoader');
+            if (loader) loader.style.display = 'none';
+        }
+        
+        // Función para mostrar mensajes con el formato "AULA ONAPC dice:"
+        function showMessage(message, isError = true) {
+            alert('AULA ONAPC dice:\n' + message);
+        }
+        
+        (function verificarSesionEstudiante() {
+            const studentEmail = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
+            if (!studentEmail) {
+                redirectToLogin();
+                return;
+            }
+        })();
+
+        let aulas = [];
+        let emailEstudiante = null;
+        let progresoActual = null;
+        let sesionActual = null;
+        let aulaActualId = null;
+        let tiempoEntradaAula = null;
+        let timeoutGuardar = null;
+
+        function mostrarLoader(show) { const el = document.getElementById('loader'); if (show) el.classList.add('show'); else el.classList.remove('show'); }
+        function generarId() { return Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
+        function escapar(t) { if(!t) return ''; return t.replace(/[&<>]/g, m => m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
+
+        function obtenerEmail() {
+            let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
+            if(!email) { 
+                const params = new URLSearchParams(window.location.search); 
+                email = params.get('email'); 
+                if(email) { 
+                    sessionStorage.setItem('studentEmail', email); 
+                    localStorage.setItem('studentEmail', email); 
+                } 
+            }
+            return email;
+        }
+
+        function cargarAulas() { 
+            return new Promise((resolve, reject) => { 
+                google.script.run.withSuccessHandler(res => resolve(res.success ? (res.data||[]) : [])).withFailureHandler(reject).getAulas(); 
+            }); 
+        }
+        
+        function cargarProgreso(email) { 
+            return new Promise((resolve, reject) => { 
+                google.script.run.withSuccessHandler(res => resolve(res.success ? (res.data||{sessions:[]}) : {sessions:[]})).withFailureHandler(reject).getProgress(email); 
+            }); 
+        }
+        
+        function guardarProgreso(email, prog) { 
+            return new Promise((resolve, reject) => { 
+                google.script.run.withSuccessHandler(res => resolve()).withFailureHandler(reject).saveProgress(email, prog); 
+            }); 
+        }
+
+        function guardarProgresoDebounced() { 
+            if(timeoutGuardar) clearTimeout(timeoutGuardar); 
+            timeoutGuardar = setTimeout(() => { 
+                if(emailEstudiante && progresoActual) guardarProgreso(emailEstudiante, progresoActual).catch(e=>console.warn(e)); 
+            }, 900); 
+        }
+
+        async function iniciarSesion() {
+            progresoActual = { sessions: [] };
+            sesionActual = { sessionId: generarId(), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] };
+            progresoActual.sessions.push(sesionActual);
+            await guardarProgreso(emailEstudiante, progresoActual);
+        }
+
+        function registrarEntradaAula(aulaId, aulaName) {
+            if(aulaActualId && tiempoEntradaAula) registrarSalidaAula();
+            aulaActualId = aulaId;
+            tiempoEntradaAula = Date.now();
+            const aulaActivity = { aulaId, aulaName, entryTime: new Date().toISOString(), exitTime: null, durationMs: 0, materialsViewed: [] };
+            sesionActual.aulasVisited.push(aulaActivity);
+            guardarProgresoDebounced();
+        }
+        
+        function registrarSalidaAula() {
+            if(!aulaActualId || !tiempoEntradaAula) return;
+            const duracion = Date.now() - tiempoEntradaAula;
+            const visita = sesionActual.aulasVisited.find(v => v.aulaId === aulaActualId && !v.exitTime);
+            if(visita) { 
+                visita.exitTime = new Date().toISOString(); 
+                visita.durationMs = (visita.durationMs||0) + duracion; 
+            }
+            aulaActualId = null; 
+            tiempoEntradaAula = null;
+            guardarProgresoDebounced();
+        }
+        
+        function registrarVistaMaterial(aulaId, fileId, fileTitle) {
+            let aulaVisit = sesionActual.aulasVisited.find(v => v.aulaId === aulaId && !v.exitTime);
+            if(!aulaVisit) { 
+                const aula = aulas.find(a=>a.id===aulaId); 
+                aulaVisit = { aulaId, aulaName: aula?.name||'Desconocido', entryTime: new Date().toISOString(), exitTime: null, durationMs:0, materialsViewed:[] }; 
+                sesionActual.aulasVisited.push(aulaVisit); 
+            }
+            let material = aulaVisit.materialsViewed.find(m => m.fileId === fileId);
+            if(!material) { 
+                material = { fileId, fileTitle, viewCount:0, firstView: new Date().toISOString(), lastView:null }; 
+                aulaVisit.materialsViewed.push(material); 
+            }
+            material.viewCount++; 
+            material.lastView = new Date().toISOString();
+            guardarProgresoDebounced();
+        }
+
+        function renderizarAulas() {
+            const container = document.getElementById('aulasList');
+            if(!aulas.length) { 
+                container.innerHTML = '<div class="empty-state">📭 No hay aulas disponibles</div>'; 
+                return; 
+            }
+            let html = '';
+            aulas.forEach(aula => {
+                const total = aula.files?.length||0;
+                const visit = sesionActual?.aulasVisited?.find(v=>v.aulaId===aula.id);
+                const vistos = visit?.materialsViewed?.length||0;
+                const pct = total ? (vistos/total)*100 : 0;
+                html += `<div class="aula-card" onclick="entrarAula('${aula.id}')">
+                            <div class="aula-header"><h3>${escapar(aula.name)}</h3></div>
+                            <div class="aula-body">
+                                <div>📄 ${total} materiales | 👁️ ${vistos} vistos</div>
+                                <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                            </div>
+                        </div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        function renderizarArchivos(aulaId) {
+            const aula = aulas.find(a=>a.id===aulaId);
+            const container = document.getElementById('filesList');
+            if(!aula || !aula.files?.length) { 
+                container.innerHTML = '<div class="empty-state">📭 No hay materiales en esta aula</div>'; 
+                return; 
+            }
+            let html = '';
+            aula.files.forEach(f => { 
+                html += `<div class="file-item">
+                            <div><strong>${escapar(f.title)}</strong></div>
+                            <button class="view-btn" onclick="abrirMaterial('${aula.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver Material</button>
+                        </div>`; 
+            });
+            container.innerHTML = html;
+        }
+
+        async function entrarAula(id) {
+            mostrarLoader(true);
+            const aula = aulas.find(a=>a.id===id);
+            if(aula) {
+                document.getElementById('aulaTitle').innerHTML = `📖 ${escapar(aula.name)}`;
+                document.getElementById('aulasView').style.display = 'none';
+                document.getElementById('filesView').style.display = 'block';
+                registrarEntradaAula(id, aula.name);
+                renderizarArchivos(id);
+            }
+            mostrarLoader(false);
+        }
+        
+        function volverAulas() { 
+            registrarSalidaAula(); 
+            document.getElementById('aulasView').style.display = 'block'; 
+            document.getElementById('filesView').style.display = 'none'; 
+            renderizarAulas(); 
+        }
+        
+        function abrirMaterial(aulaId, fileId, title, url) { 
+            registrarVistaMaterial(aulaId, fileId, title); 
+            window.open(url, '_blank'); 
+        }
+
+        function logout() {
+            registrarSalidaAula();
+            if(sesionActual) { 
+                sesionActual.sessionEnd = new Date().toISOString(); 
+                guardarProgreso(emailEstudiante, progresoActual); 
+            }
+            sessionStorage.removeItem('studentEmail');
+            localStorage.removeItem('studentEmail');
+            sessionStorage.removeItem('adminSessionActive');
+            sessionStorage.removeItem('adminSessionStart');
+            window.location.replace(getBaseUrl() + '?path=index');
+        }
+        
+        window.addEventListener('beforeunload', () => { 
+            if(sesionActual && progresoActual) { 
+                registrarSalidaAula(); 
+                sesionActual.sessionEnd = new Date().toISOString(); 
+                guardarProgreso(emailEstudiante, progresoActual); 
+            } 
+        });
+
+        (async function init() {
+            emailEstudiante = obtenerEmail();
+            if(!emailEstudiante) { 
+                redirectToLogin();
+                return; 
+            }
+            document.getElementById('studentEmailDisplay').innerText = escapar(emailEstudiante);
+            
+            try {
+                google.script.run.withSuccessHandler(async (res) => {
+                    try {
+                        if (res && res.success) {
+                            aulas = res.aulas || [];
+                            progresoActual = res.progress || { sessions: [] };
+                            
+                            if (!progresoActual.sessions) progresoActual.sessions = [];
+                            
+                            sesionActual = { sessionId: generarId(), sessionStart: new Date().toISOString(), sessionEnd: null, aulasVisited: [] }; 
+                            progresoActual.sessions.push(sesionActual); 
+                            await guardarProgreso(emailEstudiante, progresoActual); 
+                            
+                            renderizarAulas();
+                            hideInitialLoader();
+                        } else {
+                            showMessage('Error: ' + (res ? res.error : 'No hay respuesta'));
+                            hideInitialLoader();
+                        }
+                    } catch (innerError) {
+                        console.error('Error procesando datos:', innerError);
+                        hideInitialLoader();
+                    }
+                }).withFailureHandler(err => {
+                    console.error('Error de red:', err);
+                    hideInitialLoader();
+                    showMessage('No se pudo conectar con el servidor. Por favor, recarga la página.');
+                }).getStudentInitialData(emailEstudiante);
+            } catch(e) { 
+                console.error(e); 
+                showMessage('Error al cargar datos: ' + e.message);
+                setTimeout(function() {
+                    redirectToLogin();
+                }, 2000);
+            }
+        })();
+    </script>
+</body>
+</html>
