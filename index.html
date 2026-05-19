@@ -217,7 +217,6 @@
                         sessionStorage.setItem('adminSessionStart', Date.now().toString());
                         sessionStorage.removeItem('studentEmail');
                         localStorage.removeItem('studentEmail');
-                        // REDIRECCIÓN DIRECTA a admin.html
                         window.location.href = 'admin.html';
                     } else {
                         loginBtn.disabled = false;
@@ -231,7 +230,6 @@
                         localStorage.setItem('studentEmail', email);
                         sessionStorage.removeItem('adminSessionActive');
                         sessionStorage.removeItem('adminSessionStart');
-                        // REDIRECCIÓN DIRECTA a student.html
                         window.location.href = 'student.html';
                     } else {
                         loginBtn.disabled = false;
