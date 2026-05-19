@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Mi Aula</title>
+    <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self'; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -190,6 +192,104 @@
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
+        // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
+        
+        const SecurityUtils = {
+            // Sanitización mejorada para prevenir XSS
+            sanitizeInput(input) {
+                if (typeof input !== 'string') return input;
+                return input
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;')
+                    .replace(/\//g, '&#x2F;')
+                    .trim();
+            },
+            
+            // Validación de URLs de materiales
+            validateMaterialUrl(url) {
+                if (!url || typeof url !== 'string') return false;
+                
+                try {
+                    const urlObj = new URL(url);
+                    
+                    // Permitir solo dominios seguros
+                    const allowedDomains = [
+                        'youtube.com', 'youtu.be', 'www.youtube.com',
+                        'vimeo.com', 'player.vimeo.com',
+                        'drive.google.com',
+                        'docs.google.com',
+                        'onedrive.live.com',
+                        '1drv.ms',
+                        'view.officeapps.live.com'
+                    ];
+                    
+                    const domain = urlObj.hostname.toLowerCase();
+                    const isAllowed = allowedDomains.some(allowed => 
+                        domain === allowed || domain.endsWith('.' + allowed)
+                    );
+                    
+                    if (!isAllowed) return false;
+                    
+                    // Prevenir protocolos peligrosos
+                    if (urlObj.protocol !== 'https:' && urlObj.protocol !== 'http:') {
+                        return false;
+                    }
+                    
+                    // Prevenir URLs con javascript: o data:
+                    if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) {
+                        return false;
+                    }
+                    
+                    return true;
+                    
+                } catch (e) {
+                    return false; // URL inválida
+                }
+            },
+            
+            // Validación de integridad de datos
+            validateDataIntegrity(data) {
+                if (!data || typeof data !== 'object') return false;
+                
+                try {
+                    const checkObject = (obj) => {
+                        for (const key in obj) {
+                            const value = obj[key];
+                            
+                            if (typeof value === 'string') {
+                                const dangerousPatterns = [
+                                    /<script/i,
+                                    /javascript:/i,
+                                    /data:/i,
+                                    /vbscript:/i,
+                                    /on\w+\s*=/i,
+                                    /eval\(/i
+                                ];
+                                
+                                for (const pattern of dangerousPatterns) {
+                                    if (pattern.test(value)) {
+                                        console.warn('Detectado patrón peligroso en datos:', key);
+                                        return false;
+                                    }
+                                }
+                            } else if (typeof value === 'object' && value !== null) {
+                                if (!checkObject(value)) return false;
+                            }
+                        }
+                        return true;
+                    };
+                    
+                    return checkObject(data);
+                    
+                } catch (e) {
+                    console.error('Error en validación de integridad:', e);
+                    return false;
+                }
+            }
+        };
+        
         // ============ CONFIGURACIÓN INICIAL ============
         function updateClock() {
             document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES');
@@ -206,10 +306,41 @@
         let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
-        // Cargar datos
-        let aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
+        // Cargar datos con validación de integridad
+        let aulasData = localStorage.getItem('aulas_onapc');
+        let aulas;
         
-        let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
+        try {
+            aulas = JSON.parse(aulasData || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
+            
+            // Validar integridad de datos
+            if (!SecurityUtils.validateDataIntegrity(aulas)) {
+                console.error('Datos corruptos detectados en aulas');
+                const backup = localStorage.getItem('aulas_onapc_backup');
+                if (backup) {
+                    try {
+                        aulas = JSON.parse(backup);
+                        console.log('Backup restaurado exitosamente');
+                    } catch (e) {
+                        console.error('Error restaurando backup:', e);
+                        aulas = [];
+                    }
+                } else {
+                    aulas = [];
+                }
+            }
+        } catch (e) {
+            console.error('Error cargando aulas:', e);
+            aulas = [];
+        }
+        
+        let progresoGeneral;
+        try {
+            progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
+        } catch (e) {
+            console.error('Error cargando progreso:', e);
+            progresoGeneral = {};
+        }
         let progreso = progresoGeneral[email] || { sessions: [] };
         
         // Crear nueva sesión
@@ -385,6 +516,12 @@
         }
         
         function getFileType(url) {
+            // Validar URL antes de procesar
+            if (!SecurityUtils.validateMaterialUrl(url)) {
+                console.warn('URL no válida o no permitida:', url);
+                return 'blocked';
+            }
+            
             const driveId = getGoogleDriveId(url);
             if (driveId) return 'google-drive';
             const urlLower = url.toLowerCase();
@@ -400,6 +537,19 @@
             const type = getFileType(url);
             const driveId = getGoogleDriveId(url);
             
+            // Manejar URLs bloqueadas por seguridad
+            if (type === 'blocked') {
+                return `
+                    <div class="warning-message">
+                        ⚠️ Este material no puede visualizarse por razones de seguridad.
+                        <br><br>
+                        URL no válida o dominio no permitido.
+                        <br><br>
+                        Contacte al administrador si cree que esto es un error.
+                    </div>
+                `;
+            }
+            
             switch (type) {
                 case 'youtube':
                     let youtubeId = '';
@@ -410,7 +560,7 @@
                             <iframe src="https://www.youtube.com/embed/${youtubeId}" frameborder="0" allowfullscreen></iframe>
                         </div>
                         <div class="download-option">
-                            <a href="${url}" class="download-btn" target="_blank">📺 Abrir en YouTube</a>
+                            <a href="${url}" class="download-btn" target="_blank" rel="noopener noreferrer">📺 Abrir en YouTube</a>
                         </div>
                     `;
                 case 'vimeo':
@@ -429,25 +579,25 @@
                             </div>
                             <div class="download-option">
                                 <p>⚠️ Si el archivo no se visualiza (archivos muy grandes), puedes descargarlo:</p>
-                                <a href="https://drive.google.com/uc?export=download&id=${driveId}" class="download-btn" target="_blank">⬇️ Descargar archivo</a>
+                                <a href="https://drive.google.com/uc?export=download&id=${driveId}" class="download-btn" target="_blank" rel="noopener noreferrer">⬇️ Descargar archivo</a>
                             </div>
                         `;
                     }
                     return `<div class="warning-message">⚠️ No se pudo procesar el enlace de Google Drive.</div>
-                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">📥 Abrir en Google Drive</a></div>`;
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank" rel="noopener noreferrer">📥 Abrir en Google Drive</a></div>`;
                 case 'pdf':
                     return `<iframe class="pdf-viewer" src="${url}" frameborder="0"></iframe>
-                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar PDF</a></div>`;
+                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank" rel="noopener noreferrer">⬇️ Descargar PDF</a></div>`;
                 case 'video-directo':
                     return `<div class="video-container"><video controls autoplay><source src="${url}" type="video/mp4">Tu navegador no soporta video.</video></div>
-                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank">⬇️ Descargar video</a></div>`;
+                            <div class="download-option"><a href="${url}" class="download-btn" download target="_blank" rel="noopener noreferrer">⬇️ Descargar video</a></div>`;
                 case 'office':
                     const encodedUrl = encodeURIComponent(url);
                     return `<iframe class="pdf-viewer" src="https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}" frameborder="0"></iframe>
-                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">📥 Abrir documento</a></div>`;
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank" rel="noopener noreferrer">📥 Abrir documento</a></div>`;
                 default:
                     return `<div class="warning-message">⚠️ No se puede visualizar este tipo de archivo automáticamente.</div>
-                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank">🔗 Abrir enlace</a></div>`;
+                            <div class="download-option"><a href="${url}" class="download-btn" target="_blank" rel="noopener noreferrer">🔗 Abrir enlace</a></div>`;
             }
         }
         
@@ -475,7 +625,7 @@
         }
         
         // ============ RENDERIZADO ============
-        function escapar(t) { return t ? t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+        function escapar(t) { return SecurityUtils.sanitizeInput(t); }
         
         function renderizarAulas() {
             let html = '';
@@ -484,8 +634,10 @@
                 let vistos = visit?.materialsViewed?.length || 0;
                 let total = a.files?.length || 0;
                 let pct = total ? (vistos / total) * 100 : 0;
-                html += `<div class="aula-card" onclick="entrarAula('${a.id}')">
-                            <div class="aula-header"><h3>${escapar(a.name)}</h3></div>
+                const sanitizedName = SecurityUtils.sanitizeInput(a.name);
+                const safeId = SecurityUtils.sanitizeInput(a.id);
+                html += `<div class="aula-card" onclick="entrarAula('${safeId}')">
+                            <div class="aula-header"><h3>${sanitizedName}</h3></div>
                             <div class="aula-body">
                                 <div>📄 ${total} materiales | 👁️ ${vistos} vistos</div>
                                 <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
@@ -502,12 +654,17 @@
                 html = '<div class="empty-state">📭 Esta aula aún no tiene materiales</div>';
             } else {
                 a.files.forEach(f => {
+                    const sanitizedTitle = SecurityUtils.sanitizeInput(f.title);
+                    const sanitizedUrl = SecurityUtils.sanitizeInput(f.url);
+                    const safeAulaId = SecurityUtils.sanitizeInput(a.id);
+                    const safeFileId = SecurityUtils.sanitizeInput(f.id);
+                    
                     html += `<div class="file-item">
                                 <div>
-                                    <strong>${escapar(f.title)}</strong>
-                                    <div class="file-info">📎 ${f.url.substring(0, 60)}${f.url.length > 60 ? '...' : ''}</div>
+                                    <strong>${sanitizedTitle}</strong>
+                                    <div class="file-info">📎 ${sanitizedUrl.substring(0, 60)}${sanitizedUrl.length > 60 ? '...' : ''}</div>
                                 </div>
-                                <button class="view-btn" onclick="abrirMaterial('${a.id}','${f.id}','${escapar(f.title)}','${escapar(f.url)}')">📖 Ver / Estudiar</button>
+                                <button class="view-btn" onclick="abrirMaterial('${safeAulaId}','${safeFileId}','${sanitizedTitle.replace(/'/g, "\\'")}','${sanitizedUrl.replace(/'/g, "\\'")}')">📖 Ver / Estudiar</button>
                              </div>`;
                 });
             }
