@@ -616,7 +616,7 @@
                     if (SecurityUtils.validateDataIntegrity(remoteData)) {
                         aulas = remoteData;
                         localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-                        console.info('🌐 Base de datos cargada desde el servidor');
+                        console.info('🌐 Base de datos cargada desde el servidor (aulas.json)');
                     }
                 } else {
                     throw new Error('No se encontró archivo remoto');
@@ -669,17 +669,31 @@
         
         // Función para descargar la "memoria" y subirla a GitHub
         function publicarBaseDeDatos() {
-            const dataStr = JSON.stringify(aulas, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = 'aulas.json';
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-            
-            alert('✅ Archivo "aulas.json" listo.\n\nPara que los cambios sean globales, sube este archivo a tu repositorio de GitHub (reemplaza el anterior).');
+            try {
+                const dataStr = JSON.stringify(aulas, null, 2);
+                const exportFileDefaultName = 'aulas.json';
+
+                const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', url);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                
+                // Añadir al cuerpo, hacer clic y remover para asegurar la descarga
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+                
+                URL.revokeObjectURL(url); // Limpiar la URL del objeto
+
+                alert('✅ Archivo "aulas.json" generado y descargado.\n\nIMPORTANTE: Para que los cambios sean globales, DEBES subir este archivo a tu repositorio de GitHub (reemplaza el anterior).');
+                console.log('Archivo aulas.json generado y descarga iniciada.');
+
+            } catch (e) {
+                console.error('Error al generar o descargar aulas.json:', e);
+                alert('❌ Error al generar el archivo "aulas.json". Por favor, revisa la consola del navegador (F12) para más detalles.');
+            }
         }
         
         let aulaActualId = null;
