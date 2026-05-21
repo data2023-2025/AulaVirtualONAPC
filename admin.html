@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Panel de Control</title>
     <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com https://*.supabase.co; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com https://*.supabase.co; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -459,22 +459,23 @@
     
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        // Configuración de Firebase con tus credenciales reales
+    <script>
+        // Configuración proporcionada
         const firebaseConfig = {
             apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
             authDomain: "aula-virtual-onapc.firebaseapp.com",
             projectId: "aula-virtual-onapc",
             storageBucket: "aula-virtual-onapc.firebasestorage.app",
-            messagingSenderId: "2727075591899",
-            appId: "1:2727075591899:web:e17469516e17d3abfffcfe"
+            messagingSenderId: "272075519899",
+            appId: "1:272075519899:web:e17469516e17d3abfffcfe"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
         
@@ -625,15 +626,12 @@
         }
         verificarSesion();
         
-        // Datos principales
         let aulas = [];
 
-        // Intentar cargar datos desde el servidor (GitHub) al iniciar
         async function inicializarDatos() {
             showLoader();
             try {
-                // Cargar desde Firestore (Colección "clases")
-                const querySnapshot = await getDocs(collection(db, "clases"));
+                const querySnapshot = await db.collection("clases").get();
                 const remoteData = [];
                 querySnapshot.forEach((doc) => {
                     remoteData.push({ id: doc.id, ...doc.data() });
@@ -669,11 +667,10 @@
                 
                 localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
                 
-                // Sincronizar cada aula con Firestore
                 for (const aula of aulas) {
-                    await setDoc(doc(db, "clases", aula.id), {
+                    await db.collection("clases").doc(aula.id).set({
                         ...aula,
-                        ultimaModificacion: serverTimestamp()
+                        ultimaModificacion: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
 
@@ -849,7 +846,7 @@
             if (!confirm('¿Eliminar esta aula? Se eliminarán todos sus materiales.')) return;
             
             try {
-                await deleteDoc(doc(db, "clases", id));
+                await db.collection("clases").doc(id).delete();
             } catch (e) { console.error("Error al borrar en Firestore", e); }
 
             aulas = aulas.filter(a => a.id !== id);
