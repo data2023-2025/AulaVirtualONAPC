@@ -165,16 +165,6 @@
             <p id="studentEmailDisplay">Cargando...</p>
         </div>
         
-        <!-- Nueva sección de Memoria / Enlaces Rápidos -->
-        <div id="memoriaContainer" style="margin-bottom: 32px; display: none;">
-            <h3 style="color: #1e40af; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                🔗 Recursos y Enlaces Rápidos
-            </h3>
-            <div id="memoriaList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-                <!-- Se cargan dinámicamente -->
-            </div>
-        </div>
-
         <div id="aulasView">
             <div id="aulasList" class="aulas-grid"></div>
         </div>
@@ -281,49 +271,12 @@
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
         let aulas = [];
-        let memoriaItems = [];
 
-        async function inicializarDatos() {
-            try {
-                // Cargar datos sincronizados desde GitHub
-                const [resAulas, resMemoria] = await Promise.all([
-                    fetch('./aulas.json'),
-                    fetch('./memoria.json')
-                ]);
-
-                if (resAulas.ok) aulas = await resAulas.json();
-                if (resMemoria.ok) memoriaItems = await resMemoria.json();
-
+        function inicializarDatos() {
+            aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[]');
+            if (SecurityUtils.validateDataIntegrity(aulas)) {
                 renderizarAulas();
-                renderizarMemoria();
-            } catch (e) {
-                console.error("Error al sincronizar con GitHub:", e);
             }
-        }
-
-        function renderizarMemoria() {
-            const list = document.getElementById('memoriaList');
-            const container = document.getElementById('memoriaContainer');
-            
-            if (!memoriaItems.length) {
-                container.style.display = 'none';
-                return;
-            }
-            
-            container.style.display = 'block';
-            list.innerHTML = '';
-            memoriaItems.forEach(item => {
-                list.innerHTML += `
-                    <a href="${item.url}" target="_blank" style="text-decoration:none; color:inherit;">
-                        <div style="background: white; padding: 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px; transition: 0.2s;" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#e2e8f0'">
-                            <span style="font-size: 24px;">📂</span>
-                            <div style="overflow: hidden;">
-                                <div style="font-weight: 600; font-size: 0.9rem; color: #1e40af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${SecurityUtils.sanitizeInput(item.title)}</div>
-                                <div style="font-size: 0.7rem; color: #64748b;">Abrir recurso externo</div>
-                            </div>
-                        </div>
-                    </a>`;
-            });
         }
 
         let progresoGeneral;
