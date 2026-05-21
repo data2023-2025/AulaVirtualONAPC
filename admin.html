@@ -404,6 +404,10 @@
                 <div class="stat-number" id="totalSesiones">0</div>
                 <div class="stat-label">Sesiones Totales</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalMemoria">0</div>
+                <div class="stat-label">Enlaces Memoria</div>
+            </div>
         </div>
         
         <div id="aulasSection" class="section">
@@ -425,6 +429,14 @@
             <div id="filesList"></div>
         </div>
         
+        <div id="memoriaSection" class="section">
+            <div class="section-header">
+                <h3>🔗 Enlaces de Memoria (Rápido)</h3>
+                <button class="btn-primary" onclick="window.mostrarModalMemoria()">+ Nuevo Enlace</button>
+            </div>
+            <div id="memoriaList"></div>
+        </div>
+
         <div class="section">
             <div class="section-header">
                 <h3>📊 Seguimiento de Estudiantes</h3>
@@ -510,6 +522,29 @@
         </div>
     </div>
     
+    <div id="memoriaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="display:flex;justify-content:space-between;margin-bottom:20px;">
+                <span style="font-size:1.2rem;font-weight:600;">🔗 Nuevo Enlace de Memoria</span>
+                <button onclick="cerrarModal('memoriaModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button>
+            </div>
+            <form id="memoriaForm">
+                <div class="form-group">
+                    <label>Título del Enlace</label>
+                    <input type="text" id="memoriaTitle" required placeholder="Ej: Guía de Participación">
+                </div>
+                <div class="form-group">
+                    <label>URL (Google Drive / Web)</label>
+                    <input type="url" id="memoriaUrl" required placeholder="https://drive.google.com/...">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="cerrarModal('memoriaModal')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Enlace</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
@@ -683,6 +718,104 @@
             }
         }
         
+        // ============ SISTEMA DE VISTA PREVIA ============
+        function getGoogleDriveId(url) {
+            const patterns = [/\/file\/d\/([a-zA-Z0-9_-]+)/, /id=([a-zA-Z0-9_-]+)/, /\/d\/([a-zA-Z0-9_-]+)/];
+            for (const p of patterns) {
+                const m = url.match(p);
+                if (m && m[1]) return m[1];
+            }
+            return null;
+        }
+
+        function getFileType(url) {
+            if (!SecurityUtils.validateMaterialUrl(url)) return 'blocked';
+            if (getGoogleDriveId(url)) return 'google-drive';
+            const u = url.toLowerCase();
+            if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+            if (u.includes('vimeo.com')) return 'vimeo';
+            return 'unknown';
+        }
+
+        function generarVisorMaterial(title, url) {
+            const type = getFileType(url);
+            const driveId = getGoogleDriveId(url);
+            
+            if (type === 'blocked') return '<div style="padding:20px; color:red;">⚠️ URL no permitida.</div>';
+            
+            switch (type) {
+                case 'youtube':
+                    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\&\?]+)/);
+                    const ytId = ytMatch ? ytMatch[1] : '';
+                    return `<div class="video-container"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>`;
+                case 'google-drive':
+                    return `<div class="video-container"><iframe src="https://drive.google.com/file/d/${driveId}/preview" allowfullscreen></iframe></div>
+                            <div style="margin-top:15px; text-align:center;"><a href="${url}" target="_blank" class="btn-outline" style="text-decoration:none;">🔗 Abrir original</a></div>`;
+                case 'vimeo':
+                    const vMatch = url.match(/vimeo\.com\/(\d+)/);
+                    return `<div class="video-container"><iframe src="https://player.vimeo.com/video/${vMatch?vMatch[1]:''}" allowfullscreen></iframe></div>`;
+                default:
+                    return `<div style="text-align:center; padding:40px;">
+                                <p>No hay vista previa disponible para este formato.</p>
+                                <br><a href="${url}" target="_blank" class="btn-primary" style="text-decoration:none;">🌐 Abrir enlace externo</a>
+                            </div>`;
+            }
+        }
+
+        function abrirMaterial(title, url) {
+            const modal = document.getElementById('materialModal');
+            document.getElementById('materialModalTitle').textContent = title;
+            document.getElementById('materialModalContent').innerHTML = generarVisorMaterial(title, url);
+            modal.classList.add('active');
+        }
+        window.abrirMaterial = abrirMaterial;
+
+        function cerrarMaterialModal() {
+            const modal = document.getElementById('materialModal');
+            modal.classList.remove('active');
+            document.getElementById('materialModalContent').innerHTML = '';
+        }
+        window.cerrarMaterialModal = cerrarMaterialModal;
+
+        // ============ GESTIÓN DE MEMORIA ============
+        function renderizarMemoria() {
+            let html = memoriaItems.length ? '' : '<p style="text-align:center;padding:20px;">📭 No hay enlaces de memoria</p>';
+            memoriaItems.forEach(item => {
+                const title = item.title || item;
+                const url = item.url || item;
+                const id = item.id || item;
+                html += `<div class="aula-item">
+                            <div>
+                                <strong>${escapar(title)}</strong>
+                                <br><span style="font-size:11px;color:#64748b;">${escapar(url)}</span>
+                            </div>
+                            <div class="actions">
+                                <a href="${url}" target="_blank" class="btn-outline" style="text-decoration:none;">🌐 Abrir</a>
+                                <button class="btn-danger" onclick="window.eliminarMemoria('${escapar(id).replace(/'/g, "\\'")}')">🗑️</button>
+                            </div>
+                         </div>`;
+            });
+            document.getElementById('memoriaList').innerHTML = html;
+            document.getElementById('totalMemoria').innerText = memoriaItems.length;
+        }
+        window.renderizarMemoria = renderizarMemoria;
+
+        function mostrarModalMemoria() {
+            document.getElementById('memoriaTitle').value = '';
+            document.getElementById('memoriaUrl').value = '';
+            document.getElementById('memoriaModal').style.display = 'flex';
+        }
+        window.mostrarModalMemoria = mostrarModalMemoria;
+
+        function eliminarMemoria(id) {
+            if (!confirm('¿Eliminar este enlace de memoria?')) return;
+            showLoader();
+            memoriaItems = memoriaItems.filter(i => (i.id || i) !== id);
+            renderizarMemoria();
+            hideLoader();
+        }
+        window.eliminarMemoria = eliminarMemoria;
+
         // Progreso de estudiantes: estructura mejorada
         let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
         
