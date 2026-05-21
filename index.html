@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Acceso</title>
     <!-- Content Security Policy para prevenir XSS y ataques de inyección (hash adicional para script inline) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com 'sha256-3lsMJwtYmxhlxLNFvBR6oqMuDXclaYLZ4KDc5QG+MMo=' 'sha256-BhmL0o37ty6gD7sjAoDvpKBqEdgxf7zzELTYlmbkuJQ=' 'sha256-CbJcrG80cMSPmTR7UwzhoHpYRGt45kgIRyebq2REixs=' 'sha256-0SpIjpVQj2FJ8lbHcyLnNNlOUyB5EWOK+IUXnmBYH9w=' 'sha256-h3bKx1cshI2fNEnY4f1R9H5R86o+Zp80L7pEOfH1n40='; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://data2023-2025.github.io; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: https://*.googleusercontent.com https://data2023-2025.github.io; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
     <link rel="icon" href="./favicon.ico">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -506,25 +506,6 @@
                 document.getElementById('loginBtn').click();
             }
         });
-    </script>
-
-    <!-- Firebase SDK (Método Compat para evitar errores de carga de módulo) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script>
-      // Tu configuración de Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
-        authDomain: "aula-virtual-onapc.firebaseapp.com",
-        projectId: "aula-virtual-onapc",
-        storageBucket: "aula-virtual-onapc.firebasestorage.app",
-        messagingSenderId: "272075591899",
-        appId: "1:272075591899:web:e17469516e17d3abfffcfe"
-      };
-
-      // Inicializar Firebase
-      if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-      }
     </script>
 </body>
 </html>
