@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Mi Aula</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self'; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -189,7 +189,23 @@
     
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+
+        // Configuración de Firebase con tus credenciales reales
+        const firebaseConfig = {
+            apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
+            authDomain: "aula-virtual-onapc.firebaseapp.com",
+            projectId: "aula-virtual-onapc",
+            storageBucket: "aula-virtual-onapc.firebasestorage.app",
+            messagingSenderId: "2727075591899",
+            appId: "1:2727075591899:web:e17469516e17d3abfffcfe"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
         
         const SecurityUtils = {
@@ -271,19 +287,25 @@
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
         // Cargar datos
-        let aulasData = localStorage.getItem('aulas_onapc');
-        let aulas;
-        
-        try {
-            aulas = JSON.parse(aulasData || '[{"id":"1","name":"Matemáticas","files":[{"id":"f1","title":"Álgebra","url":"https://youtu.be/dQw4w9WgXcQ"}]},{"id":"2","name":"Programación","files":[{"id":"f2","title":"HTML","url":"https://youtu.be/dQw4w9WgXcQ"}]}]');
-            if (!SecurityUtils.validateDataIntegrity(aulas)) {
-                const backup = localStorage.getItem('aulas_onapc_backup');
-                if (backup) aulas = JSON.parse(backup);
-                else aulas = [];
-            }
-        } catch (e) {
+        let aulas = [];
+
+        // Escuchar cambios en Firestore en tiempo real (Colección "clases")
+        const qAulas = query(collection(db, "clases"));
+        onSnapshot(qAulas, (snapshot) => {
             aulas = [];
-        }
+            snapshot.forEach((doc) => {
+                aulas.push({ id: doc.id, ...doc.data() });
+            });
+            
+            if (SecurityUtils.validateDataIntegrity(aulas)) {
+                localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+                if (document.getElementById('aulasView').style.display !== 'none') {
+                    renderizarAulas();
+                } else if (aulaActualId) {
+                    renderizarArchivos(aulaActualId);
+                }
+            }
+        });
         
         let progresoGeneral;
         try {
@@ -529,6 +551,7 @@
             modalContent.innerHTML = generarVisorMaterial(title, url);
             modal.classList.add('active');
         }
+        window.abrirMaterial = abrirMaterial;
         
         function cerrarModal() {
             registrarFinMaterial();
@@ -537,6 +560,7 @@
             modal.classList.remove('active');
             document.getElementById('modalContent').innerHTML = '<div style="text-align:center;padding:40px;">Cargando contenido...</div>';
         }
+        window.cerrarModal = cerrarModal;
         
         // ============ RENDERIZADO ============
         function escapar(t) { return SecurityUtils.sanitizeInput(t); }
@@ -558,6 +582,7 @@
             });
             document.getElementById('aulasList').innerHTML = html || '<div class="empty-state">📭 No hay aulas disponibles</div>';
         }
+        window.renderizarAulas = renderizarAulas;
         
         function renderizarArchivos(id) {
             let a = aulas.find(a => a.id === id);
@@ -592,6 +617,7 @@
                 renderizarArchivos(id);
             }
         }
+        window.entrarAula = entrarAula;
         
         function volverAulas() {
             registrarSalidaAula();
@@ -599,6 +625,7 @@
             document.getElementById('filesView').style.display = 'none';
             renderizarAulas();
         }
+        window.volverAulas = volverAulas;
         
         function logout() {
             registrarSalidaAula();
@@ -609,6 +636,7 @@
             localStorage.removeItem('studentEmail');
             window.location.href = 'index.html';
         }
+        window.logout = logout;
         
         window.addEventListener('beforeunload', () => {
             if (sesionActual) {
