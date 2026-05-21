@@ -163,47 +163,6 @@
             gap: 12px;
             margin-top: 24px;
         }
-        
-        /* Estilos para el Visor de Materiales (Vista Previa) */
-        .material-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-        }
-        .material-modal.active { display: flex; }
-        .modal-container-viewer {
-            background: white;
-            border-radius: 32px;
-            width: 95%;
-            max-width: 1000px;
-            height: 85vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .viewer-content {
-            flex: 1;
-            padding: 20px;
-            background: #f8fafc;
-            overflow: hidden;
-        }
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            background: black;
-            border-radius: 16px;
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            border: none;
-        }
         .loader {
             position: fixed;
             top:0;
@@ -389,11 +348,6 @@
     <div class="container">
         <div class="stats">
             <div class="stat-card">
-                <button class="btn-primary" style="width:100%; margin-bottom:10px; background: #059669;" onclick="window.exportarAulasJSON()">💾 Descargar aulas.json</button>
-                <button class="btn-outline" style="width:100%; font-size: 11px;" onclick="window.exportarMemoriaJSON()">💾 Descargar memoria.json</button>
-                <div class="stat-label">Sincronización con GitHub</div>
-            </div>
-            <div class="stat-card">
                 <div class="stat-number" id="totalAulas">0</div>
                 <div class="stat-label">Total Aulas</div>
             </div>
@@ -408,10 +362,6 @@
             <div class="stat-card">
                 <div class="stat-number" id="totalSesiones">0</div>
                 <div class="stat-label">Sesiones Totales</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalMemoria">0</div>
-                <div class="stat-label">Enlaces Memoria</div>
             </div>
         </div>
         
@@ -434,14 +384,6 @@
             <div id="filesList"></div>
         </div>
         
-        <div id="memoriaSection" class="section">
-            <div class="section-header">
-                <h3>🔗 Enlaces de Memoria (Rápido)</h3>
-                <button class="btn-primary" onclick="window.mostrarModalMemoria()">+ Nuevo Enlace</button>
-            </div>
-            <div id="memoriaList"></div>
-        </div>
-
         <div class="section">
             <div class="section-header">
                 <h3>📊 Seguimiento de Estudiantes</h3>
@@ -515,41 +457,6 @@
         </div>
     </div>
     
-    <!-- Modal de Vista Previa de Material -->
-    <div id="materialModal" class="material-modal">
-        <div class="modal-container-viewer">
-            <div class="modal-header" style="background:#1e40af; color:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
-                <h3 id="materialModalTitle">Vista Previa</h3>
-                <button onclick="window.cerrarMaterialModal()" style="background:none; border:none; color:white; font-size:28px; cursor:pointer;">&times;</button>
-            </div>
-            <div class="viewer-content" id="materialModalContent">
-            </div>
-        </div>
-    </div>
-    
-    <div id="memoriaModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" style="display:flex;justify-content:space-between;margin-bottom:20px;">
-                <span style="font-size:1.2rem;font-weight:600;">🔗 Nuevo Enlace de Memoria</span>
-                <button onclick="cerrarModal('memoriaModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button>
-            </div>
-            <form id="memoriaForm">
-                <div class="form-group">
-                    <label>Título del Enlace</label>
-                    <input type="text" id="memoriaTitle" required placeholder="Ej: Guía de Participación">
-                </div>
-                <div class="form-group">
-                    <label>URL (Google Drive / Web)</label>
-                    <input type="url" id="memoriaUrl" required placeholder="https://drive.google.com/...">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" onclick="cerrarModal('memoriaModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Enlace</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
@@ -861,7 +768,6 @@
                 }
                 // Guardamos en local para la sesión actual del admin
                 localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-                console.info('Cambios guardados localmente. Recuerde descargar el JSON para actualizar GitHub.');
                 return true;
             } catch (e) {
                 console.error('Error guardando datos:', e);
@@ -933,14 +839,12 @@
             let aula = aulas.find(a => a.id === aulaActualId);
             let html = (!aula || !aula.files?.length) ? '<p style="text-align:center;padding:32px;">📭 No hay materiales en esta aula</p>' : '';
             aula?.files.forEach(f => {
-                const safeTitle = escapar(f.title).replace(/'/g, "\\'");
                 html += `<div class="file-item">
                             <div>
                                 <strong>${escapar(f.title)}</strong>
                                 <br><span style="font-size:11px;">${escapar(f.url.substring(0, 60))}${f.url.length > 60 ? '...' : ''}</span>
                             </div>
                             <div class="actions">
-                                <button class="btn-outline" onclick="window.abrirMaterial('${safeTitle}', '${f.url}')">👁️ Vista Previa</button>
                                 <button class="btn-secondary" onclick="window.editarArchivo('${f.id}')">✏️ Editar</button>
                                 <button class="btn-danger" onclick="window.eliminarArchivo('${f.id}')">🗑️ Eliminar</button>
                             </div>
