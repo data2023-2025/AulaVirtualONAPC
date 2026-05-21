@@ -324,9 +324,16 @@
         };
         progreso.sessions.push(sesionActual);
         
-        function guardarProgresoGlobal() {
+        async function guardarProgresoGlobal() {
             progresoGeneral[email] = progreso;
             localStorage.setItem('progreso_onapc', JSON.stringify(progresoGeneral));
+            
+            try {
+                // Sincronizar con Firestore para que el profesor vea el progreso
+                await db.collection("seguimiento").doc(email).set(progreso);
+            } catch (e) {
+                console.error("Error sincronizando progreso con la nube:", e);
+            }
         }
         guardarProgresoGlobal();
         
