@@ -368,7 +368,6 @@
             <div class="section-header">
                 <h3>📖 Gestión de Aulas</h3>
                 <div style="display:flex; gap:10px;">
-                    <button class="btn-outline" onclick="publicarBaseDeDatos()" title="Genera el archivo para subir a GitHub">📤 Publicar Cambios</button>
                     <button class="btn-primary" onclick="mostrarModalAula()">+ Nueva Aula</button>
                 </div>
             </div>
@@ -680,35 +679,6 @@
                 console.error('Error guardando datos:', e);
                 alert('❌ Error al guardar datos. Espacio de almacenamiento lleno o error del sistema.');
                 return false;
-            }
-        }
-        
-        // Función para descargar la "memoria" y subirla a GitHub
-        function publicarBaseDeDatos() {
-            try {
-                const dataStr = JSON.stringify(aulas, null, 2);
-                const exportFileDefaultName = 'aulas.json';
-
-                const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', url);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                
-                // Añadir al cuerpo, hacer clic y remover para asegurar la descarga
-                document.body.appendChild(linkElement);
-                linkElement.click();
-                document.body.removeChild(linkElement);
-                
-                URL.revokeObjectURL(url); // Limpiar la URL del objeto
-
-                alert('✅ Archivo "aulas.json" generado y descargado.\n\nIMPORTANTE: Para que los cambios sean globales, DEBES subir este archivo a tu repositorio de GitHub (reemplaza el anterior).');
-                console.log('Archivo aulas.json generado y descarga iniciada.');
-
-            } catch (e) {
-                console.error('Error al generar o descargar aulas.json:', e);
-                alert('❌ Error al generar el archivo "aulas.json". Por favor, revisa la consola del navegador (F12) para más detalles.');
             }
         }
         
@@ -1107,8 +1077,6 @@
             renderizarProgreso();
         }
         window.limpiarFiltros = limpiarFiltros;
-
-        window.publicarBaseDeDatos = publicarBaseDeDatos;
         
         function exportarDatos() {
             let csv = "Estudiante,Sesiones,Total Materiales Vistos,Tiempo Total (minutos),Progreso (%)\n";
