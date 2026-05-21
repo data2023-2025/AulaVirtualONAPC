@@ -1,0 +1,13 @@
+[
+  {
+    "id": "aula_ejemplo_1",
+    "name": "Aula de Prueba Inicial",
+    "files": [
+      {
+        "id": "file_1",
+        "title": "Guía de Bienvenida",
+        "url": "https://drive.google.com/file/d/1HtefUoFtG3y7L8YMF4IWgBJko3kg6Zof/view"
+      }
+    ]
+  }
+]
