@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Acceso</title>
-    <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com 'sha256-3lsMJwtYmxhlxLNFvBR6oqMuDXclaYLZ4KDc5QG+MMo=' 'sha256-BhmL0o37ty6gD7sjAoDvpKBqEdgxf7zzELTYlmbkuJQ=' 'sha256-CbJcrG80cMSPmTR7UwzhoHpYRGt45kgIRyebq2REixs='; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.gstatic.com; img-src 'self' data: https://*.googleusercontent.com; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloud.appwrite.io; img-src 'self' data: https://*.googleusercontent.com; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-image: url('https://lh3.googleusercontent.com/d/1NpP99FHG2AyA8pXlPLtdU7i14S7dTjp7=w1920-h1080');
+            background-image: url('https://lh3.googleusercontent.com/profile/picture/0');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -37,119 +36,28 @@
         .login-header h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
         .login-header p { font-size: 13px; opacity: 0.88; }
         .login-body { padding: 36px 32px; background: white; }
-        .role-buttons {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-        }
+        .role-buttons { display: flex; gap: 12px; margin-bottom: 28px; }
         .role-btn {
-            flex: 1;
-            padding: 12px;
-            border: 1.5px solid #bfdbfe;
-            background: transparent;
-            border-radius: 60px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #1e40af;
-            transition: all 0.3s;
+            flex: 1; padding: 12px; border: 1.5px solid #bfdbfe; background: transparent;
+            border-radius: 60px; cursor: pointer; font-weight: 500; font-size: 0.85rem;
+            color: #1e40af; transition: all 0.3s;
         }
-        .role-btn.active {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            border-color: transparent;
-        }
+        .role-btn.active { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; border-color: transparent; }
         .form-group { margin-bottom: 22px; }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #334155;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 28px;
-            font-size: 0.95rem;
-            background: #fefcf5;
-            transition: all 0.3s;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: white;
-        }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 0.75rem; text-transform: uppercase; }
+        .form-group input { width: 100%; padding: 14px 16px; border: 1.5px solid #e2e8f0; border-radius: 28px; font-size: 0.95rem; background: #fefcf5; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: #3b82f6; background: white; }
         .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            border: none;
-            border-radius: 60px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 8px;
-            transition: all 0.3s;
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white; border: none; border-radius: 60px; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; margin-top: 8px; transition: all 0.3s;
         }
         .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
         .login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-        .error-msg {
-            background: #fef2f2;
-            color: #b91c1c;
-            padding: 12px;
-            border-radius: 28px;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            display: none;
-        }
-        .error-msg a {
-            color: #b91c1c;
-            text-decoration: underline;
-        }
-        .success-msg {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px;
-            border-radius: 28px;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.8rem;
-            display: none;
-        }
-        .login-footer {
-            padding: 18px 32px;
-            text-align: center;
-            border-top: 1px solid #e2e8f0;
-            background: #f8fafc;
-            font-size: 0.7rem;
-            color: #64748b;
-        }
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #fff;
-            border-top-color: #bfdbfe;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .info-note {
-            background: #eff6ff;
-            padding: 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 16px;
-            color: #1e40af;
-        }
+        .error-msg { background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 28px; margin-top: 20px; text-align: center; font-size: 0.8rem; display: none; }
+        .success-msg { background: #dcfce7; color: #166534; padding: 12px; border-radius: 28px; margin-top: 20px; text-align: center; font-size: 0.8rem; display: none; }
+        .login-footer { padding: 18px 32px; text-align: center; border-top: 1px solid #e2e8f0; background: #f8fafc; font-size: 0.7rem; color: #64748b; }
+        .info-note { background: #eff6ff; padding: 10px; border-radius: 20px; font-size: 0.7rem; text-align: center; margin-top: 16px; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -160,8 +68,8 @@
         </div>
         <div class="login-body">
             <div class="role-buttons">
-                <button class="role-btn active" data-role="student">👨‍🎓 Estudiante</button>
-                <button class="role-btn" data-role="admin">👨‍🏫 Profesor/Admin</button>
+                <button class="role-btn active" id="btnStudent" onclick="setRole('student')">👨‍🎓 Estudiante</button>
+                <button class="role-btn" id="btnAdmin" onclick="setRole('admin')">👨‍🏫 Profesor/Admin</button>
             </div>
             <form id="loginForm">
                 <div class="form-group">
@@ -181,349 +89,104 @@
             </form>
         </div>
         <div class="login-footer">
-            <p>© 2025 AULA ONAPC - Todos los derechos reservados</p>
+            <p>© 2026 AULA ONAPC - Todos los derechos reservados</p>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
     <script>
-        // ==================== LISTA DE CORREOS AUTORIZADOS ====================
-        // Estudiantes autorizados (lista blanca)
-        const STUDENT_WHITELIST = new Set([
-            // CARACAS DEM
-            'abogadosparticipacion2026@gmail.com',
-            // CARABOBO
-            'juvematosr@gmail.com',
-            // COJEDES
-            'opcregionalcojedes@gmail.com',
-            // PORTUGUESA GUANARE
-            'participacionc564@gmail.com',
-            // PORTUGUESA ACARIGUA
-            'participacionciudadanaacarigua@gmail.com',
-            // BARINAS
-            'orapc.bnas@gmail.com',
-            // ARAGUA
-            'participacionciudadanaestadoar@gmail.com',
-            // ANZOATEGUI BARCELONA
-            'orapc.anzoategui@gmail.com',
-            // ANZOATEGUI EL TIGRE
-            'oapceltigre27@gmail.com',
-            // CIUDAD BOLIVAR
-            'orapc.ciudadbolivar123@gmail.com',
-            // BOLIVAR PUERTO ORDAZ
-            'participacionciudadana940@gmail.com',
-            // OPC MONAGAS
-            'opcmonagas2023@gmail.com',
-            // NUEVA ESPARTA
-            'mariluescalante.11@gmail.com',
-            // DELTA AMACURO
-            'deltaparticipacionciudadana@gmail.com',
-            // SUCRE CUMANA
-            'orapc.sucre.cumana@gmail.com',
-            // AMAZONAS
-            'sanchezchristopher458@gmail.com',
-            // MIRANDA GUARENAS
-            'opc.guarenas@gmail.com',
-            // MIRANDA BARLOVENTO
-            'opc.extbatlovento@gmail.com',
-            // MIRANDA VALLES DEL TUY
-            'pcvallesdeltuy@gmail.com',
-            // MIRANDA LOS TEQUES
-            'pciudadanadarmiranda@gmail.com',
-            // TRUJILLO
-            'participacionciudadanadart2023@gmail.com',
-            // GUARICO
-            'herrera.diego7@gmail.com',
-            // LA GUAIRA
-            'participacioncdarlaguaira239@gmail.com',
-            // APURE
-            'orapc.apure.sanfdo@gmail.com',
-            // FALCON CORO
-            'orapcfalconcoro@gmail.com',
-            // PUNTO FIJO
-            'mataedglys@gmail.com',
-            // MERIDA EL VIGIA
-            'oraopcextelvigia@gmail.com',
-            // MERIDA LIBERTADOR
-            'oraopc.merida@gmail.com',
-            // MERIDA TOVAR
-            'orapc.ext.tovar@gmail.com',
-            // CARACAS
-            'orapc.caracas@gmail.com',
-            // LARA BARQUISIMETO
-            'aurateran1957@gmail.com',
-            // LARA CARORA
-            'estefanyaherrera.111@gmail.com',
-            // TACHIRA
-            'orapctachira2024@gmail.com',
-            // ZULIA MARACAIBO
-            'orapcmaracaibo@gmail.com',
-            // ZULIA TORREMARA
-            'opctorremara2026@gmail.com',
-            // YARACUY
-            'orapccjpyaracuy@gmail.com'
-        ]);
-        
-        // ==================== SISTEMA DE SEGURIDAD ====================
-        
-        // Administradores autorizados (email + contraseña específica)
-        // ⚠️ NOTA DE SEGURIDAD: En producción, esto debe estar en un servidor backend con autenticación JWT
-        const ADMIN_CREDENTIALS = {
-            'data2023equidad@gmail.com': '58ky8gu6',
-            'dem.corderom@gmail.com': 'cordem2*26'  // Misma contraseña
-        };
-        
+        // CONFIGURACIÓN GLOBAL BACKEND APPWRITE
+        const client = new Appwrite.Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('PEGA_AQUÍ_TU_PROJECT_ID');
+
+        const account = new Appwrite.Account(client);
+
         let currentRole = 'student';
         let loginAttempts = 0;
-        const MAX_LOGIN_ATTEMPTS = 5;
-        let lockoutTime = null;
-        
-        // Función para normalizar emails (minúsculas, sin espacios)
-        function normalizeEmail(email) {
-            return email ? email.trim().toLowerCase() : '';
+        const maxAttempts = 5;
+
+        // Lista de correos institucionales autorizados
+        const STUDENT_WHITELIST = new Set([
+            'abogadosparticipacion2026@gmail.com',
+            'juvematosr@gmail.com',
+            'opcregionalcojedes@gmail.com',
+            'participacionc564@gmail.com',
+            'participacionciudadanaacarigua@gmail.com',
+            'orapc.bnas@gmail.com',
+            'participacionciudadanaestadoar@gmail.com',
+            'orapc.anzoategui@gmail.com'
+        ]);
+
+        function setRole(role) {
+            currentRole = role;
+            document.getElementById('btnStudent').classList.toggle('active', role === 'student');
+            document.getElementById('btnAdmin').classList.toggle('active', role === 'admin');
+            document.getElementById('passwordGroup').style.display = role === 'admin' ? 'block' : 'none';
+            document.getElementById('infoNote').style.display = role === 'student' ? 'block' : 'none';
+            ocultarMensajes();
         }
-        
-        // Validación de email con seguridad mejorada
-        function validateEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email || !emailRegex.test(email)) {
-                return false;
-            }
-            // Prevenir emails potencialmente peligrosos
-            const dangerousPatterns = [
-                /<script/i,
-                /javascript:/i,
-                /data:/i,
-                /vbscript:/i,
-                /onload/i,
-                /onerror/i
-            ];
-            
-            for (const pattern of dangerousPatterns) {
-                if (pattern.test(email)) {
-                    return false;
-                }
-            }
-            return true;
+
+        function ocultarMensajes() {
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'none';
         }
-        
-        // Sistema de prevención de ataques de fuerza bruta
-        function checkLoginLockout() {
-            if (lockoutTime && Date.now() < lockoutTime) {
-                const remainingTime = Math.ceil((lockoutTime - Date.now()) / 1000);
-                return remainingTime;
-            }
-            return null;
+
+        function mostrarError(msg) {
+            const err = document.getElementById('errorMsg');
+            err.innerHTML = msg;
+            err.style.display = 'block';
         }
-        
-        function recordFailedLogin() {
-            loginAttempts++;
-            if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-                lockoutTime = Date.now() + (15 * 60 * 1000); // 15 minutos de bloqueo
-                loginAttempts = 0;
-                return true;
-            }
-            return false;
+
+        function mostrarExito(msg) {
+            const succ = document.getElementById('successMsg');
+            succ.innerHTML = msg;
+            succ.style.display = 'block';
         }
-        
-        function resetLoginAttempts() {
-            loginAttempts = 0;
-            lockoutTime = null;
-        }
-        
-        // Verificar si un email está autorizado como estudiante
-        function isAuthorizedStudent(email) {
-            const normalizedEmail = normalizeEmail(email);
-            return STUDENT_WHITELIST.has(normalizedEmail);
-        }
-        
-        // Verificar si un email es administrador válido
-        function isValidAdmin(email, password) {
-            const normalizedEmail = normalizeEmail(email);
-            return ADMIN_CREDENTIALS[normalizedEmail] === password;
-        }
-        
-        // Mostrar mensaje de error
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMsg');
-            errorDiv.innerHTML = message;
-            errorDiv.style.display = 'block';
-            const successDiv = document.getElementById('successMsg');
-            successDiv.style.display = 'none';
-            
-            // Auto-ocultar después de 5 segundos
-            setTimeout(() => {
-                if (errorDiv.style.display === 'block') {
-                    errorDiv.style.display = 'none';
-                }
-            }, 5000);
-        }
-        
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMsg');
-            successDiv.innerHTML = message;
-            successDiv.style.display = 'block';
-            const errorDiv = document.getElementById('errorMsg');
-            errorDiv.style.display = 'none';
-        }
-        
-        // UI: cambiar entre roles
-        document.querySelectorAll('.role-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentRole = this.getAttribute('data-role');
-                const pwdGroup = document.getElementById('passwordGroup');
-                const infoNote = document.getElementById('infoNote');
-                
-                if (currentRole === 'admin') {
-                    pwdGroup.style.display = 'block';
-                    infoNote.innerHTML = '🔐 Acceso restringido para administradores. Use sus credenciales.';
-                } else {
-                    pwdGroup.style.display = 'none';
-                    document.getElementById('password').value = '';
-                    infoNote.innerHTML = 'ℹ️ Los estudiantes deben usar su correo institucional autorizado. Si no está autorizado, contacte al administrador.';
-                }
-                document.getElementById('errorMsg').style.display = 'none';
-                document.getElementById('successMsg').style.display = 'none';
-            });
-        });
-        
-        // Submit del formulario
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value.trim();
+            ocultarMensajes();
+
+            if (loginAttempts >= maxAttempts) {
+                mostrarError("⚠️ Acceso bloqueado temporalmente por demasiados intentos.");
+                return;
+            }
+
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('errorMsg');
-            const loginBtn = document.getElementById('loginBtn');
-            
-            // Verificar bloqueo por intentos fallidos
-            const lockoutRemaining = checkLoginLockout();
-            if (lockoutRemaining) {
-                const minutes = Math.floor(lockoutRemaining / 60);
-                const seconds = lockoutRemaining % 60;
-                showError(`🔒 Demasiados intentos fallidos. Intenta de nuevo en ${minutes}m ${seconds}s.`);
-                return;
-            }
-            
-            // Validaciones mejoradas
-            if (!email) {
-                showError('✏️ Ingresa tu correo electrónico');
-                return;
-            }
-            
-            if (!validateEmail(email)) {
-                showError('❌ Formato de correo electrónico inválido');
-                return;
-            }
-            
-            if (currentRole === 'admin') {
-                if (!password) {
-                    showError('✏️ Ingresa la contraseña');
-                    return;
-                }
-                if (password.length < 6) {
-                    showError('❌ La contraseña debe tener al menos 6 caracteres');
-                    return;
-                }
-            }
-            
-            // Deshabilitar botón durante la verificación
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner"></span> Verificando acceso...';
-            errorDiv.style.display = 'none';
-            
-            setTimeout(() => {
-                if (currentRole === 'admin') {
-                    // Verificar administrador
-                    if (isValidAdmin(email, password)) {
-                        resetLoginAttempts();
-                        showSuccess('✅ Acceso concedido. Redirigiendo al panel de administración...');
-                        // Usar sessionStorage para seguridad (se limpia al cerrar navegador)
-                        sessionStorage.setItem('adminSessionActive', 'true');
-                        sessionStorage.setItem('adminSessionStart', Date.now().toString());
-                        sessionStorage.setItem('adminEmail', normalizeEmail(email));
-                        sessionStorage.removeItem('studentEmail');
-                        localStorage.removeItem('studentEmail');
-                        setTimeout(() => {
-                            window.location.href = 'admin.html';
-                        }, 500);
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.innerHTML = "Validando credenciales...";
+
+            try {
+                if (currentRole === 'student') {
+                    // Verificación directa en la Lista Blanca Institucional
+                    if (STUDENT_WHITELIST.has(email)) {
+                        localStorage.setItem('studentEmail', email);
+                        mostrarExito("¡Acceso autorizado! Redirigiendo a tu Aula...");
+                        setTimeout(() => { window.location.href = 'student.html'; }, 1000);
                     } else {
-                        loginBtn.disabled = false;
-                        loginBtn.innerHTML = 'Ingresar al Aula';
-                        const isLocked = recordFailedLogin();
-                        if (isLocked) {
-                            showError('🔒 Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.');
-                        } else {
-                            const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
-                            showError(`❌ Acceso denegado. Correo o contraseña incorrectos. ${attemptsLeft} intentos restantes.`);
-                        }
+                        loginAttempts++;
+                        mostrarError(`❌ Correo no registrado en el sistema institucional. Intentos restantes: ${maxAttempts - loginAttempts}`);
                     }
-                } 
-                else if (currentRole === 'student') {
-                    // Verificar estudiante autorizado
-                    if (isAuthorizedStudent(email)) {
-                        resetLoginAttempts();
-                        showSuccess('✅ Correo autorizado. Redirigiendo al aula virtual...');
-                        sessionStorage.setItem('studentEmail', normalizeEmail(email));
-                        localStorage.setItem('studentEmail', normalizeEmail(email));
-                        sessionStorage.removeItem('adminSessionActive');
-                        sessionStorage.removeItem('adminSessionStart');
-                        setTimeout(() => {
-                            window.location.href = 'student.html';
-                        }, 500);
-                    } else {
-                        loginBtn.disabled = false;
-                        loginBtn.innerHTML = 'Ingresar al Aula';
-                        const isLocked = recordFailedLogin();
-                        if (isLocked) {
-                            showError('🔒 Demasiados intentos fallidos. Tu cuenta ha sido bloqueada temporalmente por 15 minutos.');
-                        } else {
-                            const attemptsLeft = MAX_LOGIN_ATTEMPTS - loginAttempts;
-                            const emailDomain = email.split('@')[1];
-                            let sugerencia = '';
-                            if (emailDomain === 'gmail.com' || emailDomain === 'GMAIL.COM') {
-                                sugerencia = '<br><br>📧 Si crees que deberías tener acceso, contacta al administrador para agregar tu correo a la lista de autorizados.';
-                            }
-                            showError(`❌ Acceso denegado. El correo "${email}" no está autorizado para acceder como estudiante.${sugerencia} ${attemptsLeft} intentos restantes.`);
-                        }
-                    }
+                } else {
+                    // Autenticación de Administradores mediante Appwrite Sessions
+                    await account.createEmailPasswordSession(email, password);
+                    mostrarExito("Sesión administrativa correcta. Abriendo panel...");
+                    setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
                 }
-            }, 800);
-        });
-        
-        // Prevenir envío con Enter si está deshabilitado
-        document.getElementById('email').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('loginBtn').click();
+            } catch (error) {
+                loginAttempts++;
+                mostrarError(`⚠️ Error de autenticación: ${error.message}. Intentos restantes: ${maxAttempts - loginAttempts}`);
+            } finally {
+                if (btn.innerHTML === "Validando credenciales...") {
+                    btn.disabled = false;
+                    btn.innerHTML = "Ingresar al Aula";
+                }
             }
         });
-        
-        document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('loginBtn').click();
-            }
-        });
-    </script>
-
-    <!-- Firebase SDK (Método Módulo) -->
-    <script type="module">
-      // Importar las funciones necesarias del SDK (corregido a v10.13.0)
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-
-      // Tu configuración de Firebase
-      const firebaseConfig = {
-        apiKey: "00000000000000000000000000",
-        authDomain: "aula-virtual-onapc.firebaseapp.com",
-        projectId: "aula-virtual-onapc",
-        storageBucket: "aula-virtual-onapc.firebasestorage.app",
-        messagingSenderId: "272075591899",
-        appId: "1:272075591899:web:e17469516e17d3abfffcfe"
-      };
-
-      // Inicializar Firebase
-      const app = initializeApp(firebaseConfig);
     </script>
 </body>
 </html>
