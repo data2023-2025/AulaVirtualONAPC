@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Mi Aula</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; img-src 'self' https://lh3.googleusercontent.com https://*.googleusercontent.com; frame-src 'self' https://www.youtube.com https://youtu.be https://player.vimeo.com https://drive.google.com https://view.officeapps.live.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; font-src 'self' data:; media-src 'self' https://*.googleusercontent.com;">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -189,22 +189,23 @@
     
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-        // Configuración de Firebase con tus credenciales reales
+    <script>
+        // Configuración proporcionada
         const firebaseConfig = {
             apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
             authDomain: "aula-virtual-onapc.firebaseapp.com",
             projectId: "aula-virtual-onapc",
             storageBucket: "aula-virtual-onapc.firebasestorage.app",
-            messagingSenderId: "2727075591899",
-            appId: "1:2727075591899:web:e17469516e17d3abfffcfe"
+            messagingSenderId: "272075519899",
+            appId: "1:272075519899:web:e17469516e17d3abfffcfe"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
         
@@ -286,12 +287,10 @@
         let email = sessionStorage.getItem('studentEmail') || localStorage.getItem('studentEmail');
         document.getElementById('studentEmailDisplay').innerText = email || 'Estudiante';
         
-        // Cargar datos
         let aulas = [];
 
-        // Escuchar cambios en Firestore en tiempo real (Colección "clases")
-        const qAulas = query(collection(db, "clases"));
-        onSnapshot(qAulas, (snapshot) => {
+        // Escuchar cambios en tiempo real
+        db.collection("clases").onSnapshot((snapshot) => {
             aulas = [];
             snapshot.forEach((doc) => {
                 aulas.push({ id: doc.id, ...doc.data() });
