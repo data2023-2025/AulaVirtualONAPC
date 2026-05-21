@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Panel de Control</title>
     <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://data2023-2025.github.io; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data: https://*.googleusercontent.com https://data2023-2025.github.io; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
     <link rel="icon" href="./favicon.ico">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -459,26 +459,8 @@
     
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
-    <!-- Firebase SDK Compat -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
     <script>
-        // Configuración proporcionada
-        const firebaseConfig = {
-            apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
-            authDomain: "aula-virtual-onapc.firebaseapp.com",
-            projectId: "aula-virtual-onapc",
-            storageBucket: "aula-virtual-onapc.firebasestorage.app",
-            messagingSenderId: "272075519899",
-            appId: "1:272075519899:web:e17469516e17d3abfffcfe"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
         // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
-        
         // Funciones de seguridad y sanitización de entrada
         const SecurityUtils = {
             // Sanitización mejorada para prevenir XSS
@@ -631,23 +613,21 @@
         async function inicializarDatos() {
             showLoader();
             try {
-                const querySnapshot = await db.collection("clases").get();
-                const remoteData = [];
-                querySnapshot.forEach((doc) => {
-                    remoteData.push({ id: doc.id, ...doc.data() });
-                });
+                // Cargar Aulas desde el repositorio
+                const resAulas = await fetch('./aulas.json');
+                if (resAulas.ok) aulas = await resAulas.json();
+                
+                // Cargar Memoria desde el repositorio
+                const resMemoria = await fetch('./memoria.json');
+                if (resMemoria.ok) memoriaItems = await resMemoria.json();
 
-                if (remoteData.length > 0 && SecurityUtils.validateDataIntegrity(remoteData)) {
-                    aulas = remoteData;
-                    localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-                    console.info('🌐 Base de datos cargada desde Firestore');
-                }
+                renderizarAulas();
+                renderizarMemoria();
             } catch (e) {
-                console.warn('Usando copia local de seguridad:', e.message);
-                aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[]');
+                console.error('Error cargando archivos JSON desde GitHub:', e);
+            } finally {
+                hideLoader();
             }
-            renderizarAulas();
-            hideLoader();
         }
         
         // Progreso de estudiantes: estructura mejorada
@@ -666,15 +646,6 @@
                 }
                 
                 localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
-                
-                for (const aula of aulas) {
-                    await db.collection("clases").doc(aula.id).set({
-                        ...aula,
-                        ultimaModificacion: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-
-                console.info('💾 Datos sincronizados con Firestore.');
                 return true;
             } catch (e) {
                 console.error('Error guardando datos:', e);
@@ -815,11 +786,6 @@
         
         async function eliminarAula(id) {
             if (!confirm('¿Eliminar esta aula? Se eliminarán todos sus materiales.')) return;
-            
-            try {
-                await db.collection("clases").doc(id).delete();
-            } catch (e) { console.error("Error al borrar en Firestore", e); }
-
             aulas = aulas.filter(a => a.id !== id);
             if (aulaActualId === id) volverAulas();
             guardarDatos();
