@@ -163,6 +163,47 @@
             gap: 12px;
             margin-top: 24px;
         }
+        
+        /* Estilos para el Visor de Materiales (Vista Previa) */
+        .material-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .material-modal.active { display: flex; }
+        .modal-container-viewer {
+            background: white;
+            border-radius: 32px;
+            width: 95%;
+            max-width: 1000px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .viewer-content {
+            flex: 1;
+            padding: 20px;
+            background: #f8fafc;
+            overflow: hidden;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            background: black;
+            border-radius: 16px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: none;
+        }
         .loader {
             position: fixed;
             top:0;
@@ -457,6 +498,18 @@
         </div>
     </div>
     
+    <!-- Modal de Vista Previa de Material -->
+    <div id="materialModal" class="material-modal">
+        <div class="modal-container-viewer">
+            <div class="modal-header" style="background:#1e40af; color:white; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;">
+                <h3 id="materialModalTitle">Vista Previa</h3>
+                <button onclick="window.cerrarMaterialModal()" style="background:none; border:none; color:white; font-size:28px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="viewer-content" id="materialModalContent">
+            </div>
+        </div>
+    </div>
+    
     <div id="loader" class="loader"><div class="spinner"></div></div>
     
     <script>
@@ -717,12 +770,14 @@
             let aula = aulas.find(a => a.id === aulaActualId);
             let html = (!aula || !aula.files?.length) ? '<p style="text-align:center;padding:32px;">📭 No hay materiales en esta aula</p>' : '';
             aula?.files.forEach(f => {
+                const safeTitle = escapar(f.title).replace(/'/g, "\\'");
                 html += `<div class="file-item">
                             <div>
                                 <strong>${escapar(f.title)}</strong>
                                 <br><span style="font-size:11px;">${escapar(f.url.substring(0, 60))}${f.url.length > 60 ? '...' : ''}</span>
                             </div>
                             <div class="actions">
+                                <button class="btn-outline" onclick="window.abrirMaterial('${safeTitle}', '${f.url}')">👁️ Vista Previa</button>
                                 <button class="btn-secondary" onclick="window.editarArchivo('${f.id}')">✏️ Editar</button>
                                 <button class="btn-danger" onclick="window.eliminarArchivo('${f.id}')">🗑️ Eliminar</button>
                             </div>
