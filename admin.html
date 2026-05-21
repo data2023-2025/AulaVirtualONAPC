@@ -4,56 +4,336 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AULA ONAPC - Panel de Control</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://cloud.appwrite.io; img-src 'self' data: https://*.googleusercontent.com; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
+    <!-- Content Security Policy para prevenir XSS y ataques de inyección -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://www.gstatic.com; img-src 'self' data: https://*.googleusercontent.com https://data2023-2025.github.io; frame-src 'self' https://drive.google.com https://docs.google.com https://www.youtube.com https://player.vimeo.com https://view.officeapps.live.com;">
+    <link rel="icon" href="https://data2023-2025.github.io/favicon.ico">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-image: url('https://lh3.googleusercontent.com/profile/picture/0'); background-size: cover; background-position: center; background-attachment: fixed; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
-        .navbar { background: white; padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3b82f6; flex-wrap: wrap; gap: 12px; }
+        body {
+            background-image: url('https://data2023-2025.github.io/fondo.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: white;
+            padding: 14px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #3b82f6;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
         .navbar h2 { color: #1e40af; }
-        .clock { font-family: monospace; background: #eff6ff; padding: 6px 14px; border-radius: 40px; color: #1e40af; }
-        .logout-btn { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 8px 24px; border-radius: 40px; cursor: pointer; }
+        .clock {
+            font-family: monospace;
+            background: #eff6ff;
+            padding: 6px 14px;
+            border-radius: 40px;
+            color: #1e40af;
+        }
+        .logout-btn {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 8px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
         .right-section { display: flex; gap: 16px; align-items: center; }
         .container { max-width: 1400px; margin: 0 auto; padding: 28px; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 20px; margin-bottom: 32px; }
-        .stat-card { background: rgba(240,249,255,0.95); padding: 22px; border-radius: 28px; text-align: center; border: 1px solid rgba(59,130,246,0.3); backdrop-filter: blur(4px); }
-        .stat-number { font-size: 38px; font-weight: 800; color: #1e40af; }
-        .stat-label { font-size: 0.85rem; color: #475569; margin-top: 8px; }
-        .section { background: rgba(248,250,252,0.95); border-radius: 32px; padding: 24px; margin-bottom: 28px; border: 1px solid rgba(59,130,246,0.25); backdrop-filter: blur(4px); }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .btn-primary { background: linear-gradient(135deg,#1e40af,#3b82f6); color: white; border: none; padding: 10px 24px; border-radius: 60px; cursor: pointer; font-weight: 500; }
-        .btn-secondary { background: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; }
-        .btn-danger { background: #dc2626; color: white; border: none; padding: 8px 20px; border-radius: 40px; cursor: pointer; }
-        .btn-outline { background: transparent; border: 1px solid #3b82f6; color: #1e40af; padding: 8px 20px; border-radius: 40px; cursor: pointer; }
-        .aula-item, .file-item { background: #eff6ff; padding: 16px 20px; border-radius: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: rgba(240,249,255,0.95);
+            padding: 22px;
+            border-radius: 28px;
+            text-align: center;
+            border: 1px solid rgba(59,130,246,0.3);
+            backdrop-filter: blur(4px);
+        }
+        .stat-number {
+            font-size: 38px;
+            font-weight: 800;
+            color: #1e40af;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #475569;
+            margin-top: 8px;
+        }
+        .section {
+            background: rgba(248,250,252,0.95);
+            border-radius: 32px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(59,130,246,0.25);
+            backdrop-filter: blur(4px);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg,#1e40af,#3b82f6);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .aula-item, .file-item {
+            background: #eff6ff;
+            padding: 16px 20px;
+            border-radius: 24px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
         .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .modal { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { background: white; border-radius: 32px; max-width: 500px; width: 90%; padding: 28px; }
+        .modal {
+            display: none;
+            position: fixed;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            max-width: 500px;
+            width: 90%;
+            padding: 28px;
+        }
         .form-group { margin-bottom: 20px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 28px; font-family: inherit; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-        .loader { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 28px;
+            font-family: inherit;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .loader {
+            position: fixed;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
         .loader.show { display: flex; }
-        .spinner { width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #1e40af; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #1e40af;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #initialLoader { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg,#1e40af,#3b82f6); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
-        .initial-spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        .student-card { background: white; border-radius: 24px; margin-bottom: 20px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .student-header { background: #f1f5f9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; flex-wrap: wrap; gap: 12px; }
-        .student-header:hover { background: #e2e8f0; }
-        .student-email { font-weight: 700; color: #1e40af; font-size: 1rem; }
-        .student-badge { background: #3b82f6; color: white; padding: 4px 12px; border-radius: 30px; font-size: 0.75rem; }
-        .student-stats { display: flex; gap: 20px; font-size: 0.8rem; color: #64748b; }
-        .student-details { padding: 20px; display: none; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-        .student-details.open { display: block; }
-        .session-item { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
-        .session-header { display: flex; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .session-date { color: #3b82f6; font-weight: 500; }
-        .aula-visit { background: #eff6ff; padding: 12px; border-radius: 16px; margin-top: 10px; }
-        .material-view { background: #fef3c7; padding: 8px 12px; border-radius: 12px; margin: 8px 0 0 20px; font-size: 0.8rem; }
-        .progress-chart { width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #1e40af, #3b82f6); width: 0%; }
-        .filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-input { padding: 10px 16px; border: 1.5px solid #e2e8f0; border-radius: 40px; flex: 1; min-width: 200px; }
+        #initialLoader {
+            position: fixed;
+            top:0;
+            left:0;
+            right:0;
+            bottom:0;
+            background: linear-gradient(135deg,#1e40af,#3b82f6);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .initial-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        /* Estilos para el progreso de estudiantes */
+        .student-card {
+            background: white;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .student-header {
+            background: #f1f5f9;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .student-header:hover {
+            background: #e2e8f0;
+        }
+        .student-email {
+            font-weight: 700;
+            color: #1e40af;
+            font-size: 1rem;
+        }
+        .student-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        .student-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .student-details {
+            padding: 20px;
+            display: none;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+        .student-details.open {
+            display: block;
+        }
+        .session-item {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #e2e8f0;
+        }
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .session-date {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+        .aula-visit {
+            background: #eff6ff;
+            padding: 12px;
+            border-radius: 16px;
+            margin-top: 10px;
+        }
+        .material-view {
+            background: #fef3c7;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin: 8px 0 0 20px;
+            font-size: 0.8rem;
+        }
+        .progress-chart {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            width: 0%;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-input {
+            padding: 10px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 40px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .export-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            color: #1e40af;
+        }
     </style>
 </head>
 <body>
@@ -67,22 +347,36 @@
     </div>
     <div class="container">
         <div class="stats">
-            <div class="stat-card"><div class="stat-number" id="totalAulas">0</div><div class="stat-label">Total Aulas</div></div>
-            <div class="stat-card"><div class="stat-number" id="totalArchivos">0</div><div class="stat-label">Total Materiales</div></div>
-            <div class="stat-card"><div class="stat-number" id="totalEstudiantes">0</div><div class="stat-label">Estudiantes Registrados</div></div>
-            <div class="stat-card"><div class="stat-number" id="totalSesiones">0</div><div class="stat-label">Sesiones Totales</div></div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalAulas">0</div>
+                <div class="stat-label">Total Aulas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalArchivos">0</div>
+                <div class="stat-label">Total Materiales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalEstudiantes">0</div>
+                <div class="stat-label">Estudiantes Registrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalSesiones">0</div>
+                <div class="stat-label">Sesiones Totales</div>
+            </div>
         </div>
         
         <div id="aulasSection" class="section">
             <div class="section-header">
                 <h3>📖 Gestión de Aulas</h3>
-                <button class="btn-primary" onclick="mostrarModalAula()">+ Nueva Aula</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-primary" onclick="mostrarModalAula()">+ Nueva Aula</button>
+                </div>
             </div>
             <div id="aulasList"></div>
         </div>
         
         <div id="filesSection" class="section" style="display: none;">
-            <button class="btn-secondary" onclick="volverAulas()">← Volver a Aulas</button>
+            <button class="btn-secondary back-btn" onclick="volverAulas()">← Volver a Aulas</button>
             <div class="section-header">
                 <h3 id="aulaActualTitle"></h3>
                 <button class="btn-primary" onclick="mostrarModalArchivo()">+ Cargar Material</button>
@@ -107,38 +401,49 @@
             <div id="progressList"></div>
         </div>
     </div>
-
+    
+    <!-- Modales -->
     <div id="aulaModal" class="modal">
         <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-                <span style="font-size:1.2rem;font-weight:600;">📁 Estructurar Aula</span>
-                <button onclick="cerrarModal('aulaModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">×</button>
+            <div class="modal-header" style="display:flex;justify-content:space-between;margin-bottom:20px;">
+                <span style="font-size:1.2rem;font-weight:600;">📁 Nueva Aula</span>
+                <button onclick="cerrarModal('aulaModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button>
             </div>
             <form id="aulaForm">
-                <div class="form-group"><label>Nombre del Aula</label><input type="text" id="aulaName" required></div>
+                <div class="form-group">
+                    <label>Nombre del Aula</label>
+                    <input type="text" id="aulaName" required>
+                </div>
                 <input type="hidden" id="editAulaId">
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="cerrarModal('aulaModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Aula</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
-
+    
     <div id="fileModal" class="modal">
         <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+            <div class="modal-header" style="display:flex;justify-content:space-between;margin-bottom:20px;">
                 <span style="font-size:1.2rem;font-weight:600;">📄 Material Educativo</span>
-                <button onclick="cerrarModal('fileModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">×</button>
+                <button onclick="cerrarModal('fileModal')" style="background:none;border:none;font-size:28px;cursor:pointer;">&times;</button>
             </div>
             <form id="fileForm">
-                <div class="form-group"><label>Título del Material</label><input type="text" id="fileTitle" required></div>
-                <div class="form-group"><label>URL del Material</label><input type="url" id="fileUrl" required placeholder="https://drive.google.com/..."></div>
                 <div class="form-group">
-                    <label>Tipo</label>
+                    <label>Título del Material</label>
+                    <input type="text" id="fileTitle" required placeholder="Ej: Video Introducción">
+                </div>
+                <div class="form-group">
+                    <label>URL del Material</label>
+                    <input type="url" id="fileUrl" required placeholder="https://drive.google.com/... o https://youtu.be/...">
+                </div>
+                <div class="form-group">
+                    <label>Tipo (opcional)</label>
                     <select id="fileType">
-                        <option value="pdf">PDF</option>
+                        <option value="">Auto-detectar</option>
                         <option value="video">Video</option>
+                        <option value="pdf">PDF</option>
                         <option value="ppt">Presentación</option>
                         <option value="otro">Otro</option>
                     </select>
@@ -146,360 +451,672 @@
                 <input type="hidden" id="editFileId">
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="cerrarModal('fileModal')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Material</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
-
+    
     <div id="loader" class="loader"><div class="spinner"></div></div>
+    
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
     <script>
-        // CLIENTE CORE BACKEND
-        const client = new Appwrite.Client()
-            .setEndpoint('https://cloud.appwrite.io/v1')
-            .setProject('PEGA_AQUÍ_TU_PROJECT_ID');
-
-        const databases = new Appwrite.Databases(client);
-        const account = new Appwrite.Account(client);
-
-        const DATABASE_ID = 'PEGA_AQUÍ_TU_DATABASE_ID';
-        const COLL_AULAS = 'aulas';
-        const COLL_FILES = 'files';
-        const COLL_TRACKING = 'tracking';
-
-        let aulasCache = [];
-        let filesCache = [];
-        let trackingCache = [];
-        let aulaActualId = null;
-
-        // Sanitización para inyección Cero Vulnerabilidades
-        const SecurityUtils = {
-            sanitizeInput(str) {
-                if (typeof str !== 'string') return str;
-                return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').trim();
-            }
+        // Configuración proporcionada
+        const firebaseConfig = {
+            apiKey: "AIzaSyDno7ySxC7Xvta09Ir7k9WECK3aZn40-hI",
+            authDomain: "aula-virtual-onapc.firebaseapp.com",
+            projectId: "aula-virtual-onapc",
+            storageBucket: "aula-virtual-onapc.firebasestorage.app",
+            messagingSenderId: "272075519899",
+            appId: "1:272075519899:web:e17469516e17d3abfffcfe"
         };
 
-        async function inicializarDatos() {
-            try {
-                // Verificar sesión administrativa activa
-                await account.get();
-                
-                // Cargas en cascada NoSQL
-                const resAulas = await databases.listDocuments(DATABASE_ID, COLL_AULAS);
-                aulasCache = resAulas.documents;
-                
-                const resFiles = await databases.listDocuments(DATABASE_ID, COLL_FILES);
-                filesCache = resFiles.documents;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-                const resTracking = await databases.listDocuments(DATABASE_ID, COLL_TRACKING);
-                trackingCache = resTracking.documents.map(d => JSON.parse(d.data));
+        // ==================== SISTEMA DE SEGURIDAD Y SANITIZACIÓN ====================
+        
+        // Funciones de seguridad y sanitización de entrada
+        const SecurityUtils = {
+            // Sanitización mejorada para prevenir XSS
+            sanitizeInput(input) {
+                if (typeof input !== 'string') return input;
+                return input
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#x27;')
+                    .replace(/\//g, '&#x2F;')
+                    .trim();
+            },
+            
+            // Validación de URLs de materiales
+            validateMaterialUrl(url) {
+                if (!url || typeof url !== 'string') return false;
+                
+                try {
+                    const urlObj = new URL(url);
+                    
+                    // Permitir solo dominios seguros
+                    const allowedDomains = [
+                        'youtube.com', 'youtu.be', 'www.youtube.com',
+                        'vimeo.com', 'player.vimeo.com',
+                        'drive.google.com',
+                        'docs.google.com',
+                        'onedrive.live.com',
+                        '1drv.ms',
+                        'view.officeapps.live.com'
+                    ];
+                    
+                    const domain = urlObj.hostname.toLowerCase();
+                    const isAllowed = allowedDomains.some(allowed => 
+                        domain === allowed || domain.endsWith('.' + allowed)
+                    );
+                    
+                    if (!isAllowed) return false;
+                    
+                    // Prevenir protocolos peligrosos
+                    if (urlObj.protocol !== 'https:' && urlObj.protocol !== 'http:') {
+                        return false;
+                    }
+                    
+                    // Prevenir URLs con javascript: o data:
+                    if (url.startsWith('javascript:') || url.startsWith('data:') || url.startsWith('vbscript:')) {
+                        return false;
+                    }
+                    
+                    return true;
+                    
+                } catch (e) {
+                    return false; // URL inválida
+                }
+            },
+            
+            // Validación de nombres de archivos y aulas
+            validateName(name) {
+                if (!name || typeof name !== 'string') return false;
+                if (name.length < 2 || name.length > 100) return false;
+                
+                // Prevenir caracteres peligrosos
+                const dangerousChars = /<|>|script:|javascript:|data:|onerror|onload/i;
+                if (dangerousChars.test(name)) return false;
+                
+                return true;
+            },
+            
+            // Validación de integridad de datos
+            validateDataIntegrity(data) {
+                if (!data || typeof data !== 'object') return false;
+                
+                try {
+                    // Verificar estructura básica
+                    if (Array.isArray(data)) {
+                        return data.every(item => this.validateDataIntegrity(item));
+                    }
+                    
+                    // Verificar campos peligrosos
+                    const checkObject = (obj) => {
+                        for (const key in obj) {
+                            const value = obj[key];
+                            
+                            if (typeof value === 'string') {
+                                // Detectar código potencialmente malicioso
+                                const dangerousPatterns = [
+                                    /<script/i,
+                                    /javascript:/i,
+                                    /data:/i,
+                                    /vbscript:/i,
+                                    /on\w+\s*=/i,
+                                    /eval\(/i
+                                ];
+                                
+                                for (const pattern of dangerousPatterns) {
+                                    if (pattern.test(value)) {
+                                        console.warn('Detectado patrón peligroso en datos:', key, value);
+                                        return false;
+                                    }
+                                }
+                            } else if (typeof value === 'object' && value !== null) {
+                                if (!checkObject(value)) return false;
+                            }
+                        }
+                        return true;
+                    };
+                    
+                    return checkObject(data);
+                    
+                } catch (e) {
+                    console.error('Error en validación de integridad:', e);
+                    return false;
+                }
+            },
+            
+            // Generar IDs seguros
+            generateSecureId() {
+                return Date.now().toString(36) + '_' + 
+                       Math.random().toString(36).substr(2, 9) + '_' + 
+                       Math.random().toString(36).substr(2, 9);
+            }
+        };
+        
+        // ============ FUNCIONES BASE ============
+        function updateClock() {
+            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-ES');
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+        
+        function redirectToLogin() { window.location.href = 'index.html'; }
+        window.redirectToLogin = redirectToLogin;
 
-                renderizarAulas();
-                renderizarSeguimiento();
-                actualizarMetricas();
-                llenarFiltroAulas();
-            } catch (err) {
-                console.error("Acceso no autorizado al Panel de Control:", err.message);
+        function showLoader() { document.getElementById('loader').classList.add('show'); }
+        function hideLoader() { document.getElementById('loader').classList.remove('show'); }
+        
+        function verificarSesion() {
+            if(sessionStorage.getItem('adminSessionActive') !== 'true') { 
                 window.location.href = 'index.html';
-            } finally {
-                document.getElementById('initialLoader').style.display = 'none';
+                return; 
+            }
+            let start = sessionStorage.getItem('adminSessionStart');
+            if(start && (Date.now() - parseInt(start)) > 28800000) { sessionStorage.clear(); redirectToLogin(); }
+            sessionStorage.setItem('adminSessionStart', Date.now().toString());
+        }
+        verificarSesion();
+        
+        let aulas = [];
+
+        async function inicializarDatos() {
+            showLoader();
+            try {
+                const querySnapshot = await db.collection("clases").get();
+                const remoteData = [];
+                querySnapshot.forEach((doc) => {
+                    remoteData.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (remoteData.length > 0 && SecurityUtils.validateDataIntegrity(remoteData)) {
+                    aulas = remoteData;
+                    localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+                    console.info('🌐 Base de datos cargada desde Firestore');
+                }
+            } catch (e) {
+                console.warn('Usando copia local de seguridad:', e.message);
+                aulas = JSON.parse(localStorage.getItem('aulas_onapc') || '[]');
+            }
+            renderizarAulas();
+            hideLoader();
+        }
+        
+        // Progreso de estudiantes: estructura mejorada
+        let progresoGeneral = JSON.parse(localStorage.getItem('progreso_onapc') || '{}');
+        
+        /**
+         * Sincroniza los cambios con Firestore para que sean globales.
+         */
+        async function guardarDatos() {
+            try {
+                // Validar integridad antes de guardar
+                if (!SecurityUtils.validateDataIntegrity(aulas)) {
+                    console.error('⚠️ Datos corruptos detectados, no guardando');
+                    alert('❌ Error: Se detectaron datos corruptos. Por favor, contacte al administrador.');
+                    return false;
+                }
+                
+                localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+                
+                for (const aula of aulas) {
+                    await db.collection("clases").doc(aula.id).set({
+                        ...aula,
+                        ultimaModificacion: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                console.info('💾 Datos sincronizados con Firestore.');
+                return true;
+            } catch (e) {
+                console.error('Error guardando datos:', e);
+                alert('❌ Error al guardar datos. Espacio de almacenamiento lleno o error del sistema.');
+                return false;
             }
         }
-
-        function actualizarMetricas() {
-            document.getElementById('totalAulas').innerText = aulasCache.length;
-            document.getElementById('totalArchivos').innerText = filesCache.length;
-            
-            const estudiantesUnicos = new Set(trackingCache.map(t => t.studentEmail));
-            document.getElementById('totalEstudiantes').innerText = estudiantesUnicos.size;
-            
-            const totalSesiones = trackingCache.reduce((acc, t) => acc + (t.sessions ? t.sessions.length : 0), 0);
-            document.getElementById('totalSesiones').innerText = totalSesiones;
-        }
-
+        
+        let aulaActualId = null;
+        
+        function generarId() { return SecurityUtils.generateSecureId(); }
+        function escapar(t) { return SecurityUtils.sanitizeInput(t); }
+        function cerrarModal(id) { document.getElementById(id).style.display = 'none'; }
+        window.cerrarModal = cerrarModal;
+        
+        // ============ RENDERIZADO DE AULAS ============
         function renderizarAulas() {
-            const list = document.getElementById('aulasList');
-            list.innerHTML = '';
-            aulasCache.forEach(aula => {
-                const count = filesCache.filter(f => f.aulaId === aula.$id).length;
-                list.innerHTML += `
-                    <div class="aula-item">
-                        <div>
-                            <strong>${aula.name}</strong>
-                            <span style="color:#64748b; font-size:0.85rem; margin-left:12px;">(${count} materiales)</span>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-outline" onclick="abrirAula('${aula.$id}', '${aula.name}')">👁️ Ver Contenido</button>
-                            <button class="btn-secondary" onclick="mostrarModalAula('${aula.$id}', '${aula.name}')">✏️ Editar</button>
-                            <button class="btn-danger" onclick="eliminarAula('${aula.$id}')">🗑️ Eliminar</button>
-                        </div>
-                    </div>`;
+            // Validar integridad de datos antes de renderizar
+            if (!SecurityUtils.validateDataIntegrity(aulas)) {
+                console.error('Datos corruptos detectados, restaurando backup...');
+                const backup = localStorage.getItem('aulas_onapc_backup');
+                if (backup) {
+                    try {
+                        aulas = JSON.parse(backup);
+                        guardarDatos();
+                    } catch (e) {
+                        console.error('Error restaurando backup:', e);
+                        aulas = [];
+                    }
+                } else {
+                    aulas = [];
+                }
+            }
+            
+            let html = aulas.length ? '' : '<p style="text-align:center;padding:32px;">📭 No hay aulas creadas</p>';
+            aulas.forEach(a => {
+                const sanitizedName = SecurityUtils.sanitizeInput(a.name);
+                const safeId = SecurityUtils.sanitizeInput(a.id);
+                html += `<div class="aula-item">
+                            <div>
+                                <strong>${sanitizedName}</strong>
+                                <br><span style="font-size:12px;">📄 ${a.files?.length || 0} materiales</span>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-primary" onclick="window.entrarAula('${safeId}')">📂 Ver</button>
+                                <button class="btn-secondary" onclick="window.editarAula('${safeId}')">✏️ Editar</button>
+                                <button class="btn-danger" onclick="window.eliminarAula('${safeId}')">🗑️ Eliminar</button>
+                            </div>
+                         </div>`;
             });
+            document.getElementById('aulasList').innerHTML = html;
+            document.getElementById('totalAulas').innerText = aulas.length;
+            document.getElementById('totalArchivos').innerText = aulas.reduce((s,a) => s + (a.files?.length || 0), 0);
+            
+            // Actualizar selector de aula en filtros
+            const filterSelect = document.getElementById('filterAula');
+            if (filterSelect) {
+                const currentValue = filterSelect.value;
+                filterSelect.innerHTML = '<option value="">Todas las aulas</option>';
+                aulas.forEach(a => {
+                    const sanitizedName = SecurityUtils.sanitizeInput(a.name);
+                    const safeId = SecurityUtils.sanitizeInput(a.id);
+                    filterSelect.innerHTML += `<option value="${safeId}" ${currentValue === a.id ? 'selected' : ''}>${sanitizedName}</option>`;
+                });
+            }
         }
-
-        function abrirAula(id, name) {
+        
+        function renderizarArchivos() {
+            let aula = aulas.find(a => a.id === aulaActualId);
+            let html = (!aula || !aula.files?.length) ? '<p style="text-align:center;padding:32px;">📭 No hay materiales en esta aula</p>' : '';
+            aula?.files.forEach(f => {
+                html += `<div class="file-item">
+                            <div>
+                                <strong>${escapar(f.title)}</strong>
+                                <br><span style="font-size:11px;">${escapar(f.url.substring(0, 60))}${f.url.length > 60 ? '...' : ''}</span>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-secondary" onclick="window.editarArchivo('${f.id}')">✏️ Editar</button>
+                                <button class="btn-danger" onclick="window.eliminarArchivo('${f.id}')">🗑️ Eliminar</button>
+                            </div>
+                         </div>`;
+            });
+            document.getElementById('filesList').innerHTML = html;
+        }
+        
+        function entrarAula(id) {
             aulaActualId = id;
-            document.getElementById('aulaActualTitle').innerText = name;
+            document.getElementById('aulaActualTitle').innerHTML = `📖 ${escapar(aulas.find(a => a.id === id).name)}`;
             document.getElementById('aulasSection').style.display = 'none';
             document.getElementById('filesSection').style.display = 'block';
             renderizarArchivos();
         }
-
+        window.entrarAula = entrarAula;
+        
         function volverAulas() {
             aulaActualId = null;
             document.getElementById('aulasSection').style.display = 'block';
             document.getElementById('filesSection').style.display = 'none';
+            renderizarAulas();
         }
-
-        function renderizarArchivos() {
-            const list = document.getElementById('filesList');
-            list.innerHTML = '';
-            const filtrados = filesCache.filter(f => f.aulaId === aulaActualId);
-            
-            if (filtrados.length === 0) {
-                list.innerHTML = '<p style="padding:20px; color:#64748b;">No hay materiales educativos cargados en esta aula.</p>';
-                return;
-            }
-
-            filtrados.forEach(file => {
-                list.innerHTML += `
-                    <div class="file-item">
-                        <div>
-                            <strong>${file.title}</strong> <span style="font-size:0.8rem; background:#3b82f6; color:white; padding:2px 8px; border-radius:10px;">${file.type}</span>
-                            <p style="font-size:0.8rem; color:#64748b;">${file.url}</p>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-secondary" onclick="mostrarModalArchivo('${file.$id}', '${file.title}', '${file.url}', '${file.type}')">✏️ Editar</button>
-                            <button class="btn-danger" onclick="eliminarArchivo('${file.$id}')">🗑️ Eliminar</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        // Formularios y CRUD NoSQL directos a Appwrite
-        document.getElementById('aulaForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('editAulaId').value;
-            const name = SecurityUtils.sanitizeInput(document.getElementById('aulaName').value);
-            
-            document.getElementById('loader').classList.add('show');
-            try {
-                if (id) {
-                    await databases.updateDocument(DATABASE_ID, COLL_AULAS, id, { name });
-                } else {
-                    await databases.createDocument(DATABASE_ID, COLL_AULAS, Appwrite.ID.unique(), { name });
-                }
-                cerrarModal('aulaModal');
-                await inicializarDatos();
-            } catch (err) {
-                alert("Error al guardar aula: " + err.message);
-            } finally {
-                document.getElementById('loader').classList.remove('show');
-            }
-        });
-
-        document.getElementById('fileForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('editFileId').value;
-            const title = SecurityUtils.sanitizeInput(document.getElementById('fileTitle').value);
-            const url = document.getElementById('fileUrl').value.trim();
-            const type = document.getElementById('fileType').value;
-
-            document.getElementById('loader').classList.add('show');
-            try {
-                const data = { aulaId: aulaActualId, title, url, type, createdAt: new Date().toISOString() };
-                if (id) {
-                    await databases.updateDocument(DATABASE_ID, COLL_FILES, id, data);
-                } else {
-                    await databases.createDocument(DATABASE_ID, COLL_FILES, Appwrite.ID.unique(), data);
-                }
-                cerrarModal('fileModal');
-                await inicializarDatos();
-                renderizarArchivos();
-            } catch (err) {
-                alert("Error al procesar archivo: " + err.message);
-            } finally {
-                document.getElementById('loader').classList.remove('show');
-            }
-        });
-
-        async function eliminarAula(id) {
-            if (!confirm("¿Deseas eliminar permanentemente esta aula institucional junto con sus materiales asociados?")) return;
-            document.getElementById('loader').classList.add('show');
-            try {
-                await databases.deleteDocument(DATABASE_ID, COLL_AULAS, id);
-                // Cascada lógica manual de materiales
-                const vinculados = filesCache.filter(f => f.aulaId === id);
-                for (let f of vinculados) {
-                    await databases.deleteDocument(DATABASE_ID, COLL_FILES, f.$id);
-                }
-                await inicializarDatos();
-            } catch (err) {
-                alert("Error al eliminar aula: " + err.message);
-            } finally {
-                document.getElementById('loader').classList.remove('show');
-            }
-        }
-
-        async function eliminarArchivo(id) {
-            if (!confirm("¿Eliminar este material?")) return;
-            document.getElementById('loader').classList.add('show');
-            try {
-                await databases.deleteDocument(DATABASE_ID, COLL_FILES, id);
-                await inicializarDatos();
-                renderizarArchivos();
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally {
-                document.getElementById('loader').classList.remove('show');
-            }
-        }
-
-        function mostrarModalAula(id = '', name = '') {
-            document.getElementById('editAulaId').value = id;
-            document.getElementById('aulaName').value = name;
+        window.volverAulas = volverAulas;
+        
+        // ============ CRUD AULAS ============
+        function mostrarModalAula(editId = null) {
+            document.getElementById('aulaName').value = editId ? aulas.find(a => a.id === editId).name : '';
+            document.getElementById('editAulaId').value = editId || '';
             document.getElementById('aulaModal').style.display = 'flex';
         }
-
-        function mostrarModalArchivo(id = '', title = '', url = '', type = 'pdf') {
-            document.getElementById('editFileId').value = id;
-            document.getElementById('fileTitle').value = title;
-            document.getElementById('fileUrl').value = url;
-            document.getElementById('fileType').value = type;
-            document.getElementById('fileModal').style.display = 'flex';
-        }
-
-        function cerrarModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // Sistema de Tracking y Renderizado de Progreso Estudiantil
-        function renderizarSeguimiento() {
-            const container = document.getElementById('progressList');
-            container.innerHTML = '';
-
-            if (trackingCache.length === 0) {
-                container.innerHTML = '<p style="color:#64748b;">No hay actividad de estudiantes registrada.</p>';
+        window.mostrarModalAula = mostrarModalAula;
+        
+        function editarAula(id) { mostrarModalAula(id); }
+        window.editarAula = editarAula;
+        
+        document.getElementById('aulaForm').onsubmit = (e) => {
+            e.preventDefault();
+            let name = document.getElementById('aulaName').value.trim();
+            let id = document.getElementById('editAulaId').value;
+            
+            // Validación de seguridad
+            if (!SecurityUtils.validateName(name)) {
+                alert('❌ Nombre de aula inválido. Debe tener entre 2 y 100 caracteres y no contener caracteres especiales.');
                 return;
             }
+            
+            // Sanitizar entrada
+            name = SecurityUtils.sanitizeInput(name);
+            
+            if (id) {
+                let idx = aulas.findIndex(a => a.id === id);
+                if (idx !== -1) aulas[idx].name = name;
+            } else {
+                aulas.push({ id: generarId(), name, files: [] });
+            }
+            guardarDatos();
+            renderizarAulas();
+            cerrarModal('aulaModal');
+        };
+        
+        async function eliminarAula(id) {
+            if (!confirm('¿Eliminar esta aula? Se eliminarán todos sus materiales.')) return;
+            
+            try {
+                await db.collection("clases").doc(id).delete();
+            } catch (e) { console.error("Error al borrar en Firestore", e); }
 
-            trackingCache.forEach((track, index) => {
-                const totalVistos = track.sessions?.reduce((sum, s) => sum + (s.aulasVisited?.reduce((acc, v) => acc + (v.materialsViewed?.length || 0), 0) || 0), 0) || 0;
-                const totalMateriales = filesCache.length || 1;
-                const porcentaje = Math.min(Math.round((totalVistos / totalMateriales) * 100), 100);
-
-                container.innerHTML += `
-                    <div class="student-card" id="studentCard-${index}">
-                        <div class="student-header" onclick="toggleDetails(${index})">
+            aulas = aulas.filter(a => a.id !== id);
+            if (aulaActualId === id) volverAulas();
+            guardarDatos();
+            renderizarAulas();
+            renderizarProgreso();
+        }
+        window.eliminarAula = eliminarAula;
+        
+        // ============ CRUD ARCHIVOS ============
+        function mostrarModalArchivo(fileId = null) {
+            let aula = aulas.find(a => a.id === aulaActualId);
+            if (fileId) {
+                let f = aula.files.find(f => f.id === fileId);
+                document.getElementById('fileTitle').value = f.title;
+                document.getElementById('fileUrl').value = f.url;
+                document.getElementById('fileType').value = f.type || '';
+                document.getElementById('editFileId').value = fileId;
+            } else {
+                document.getElementById('fileTitle').value = '';
+                document.getElementById('fileUrl').value = '';
+                document.getElementById('fileType').value = '';
+                document.getElementById('editFileId').value = '';
+            }
+            document.getElementById('fileModal').style.display = 'flex';
+        }
+        window.mostrarModalArchivo = mostrarModalArchivo;
+        
+        function editarArchivo(id) { mostrarModalArchivo(id); }
+        window.editarArchivo = editarArchivo;
+        
+        document.getElementById('fileForm').onsubmit = (e) => {
+            e.preventDefault();
+            let title = document.getElementById('fileTitle').value.trim();
+            let url = document.getElementById('fileUrl').value.trim();
+            let type = document.getElementById('fileType').value;
+            let id = document.getElementById('editFileId').value;
+            let aula = aulas.find(a => a.id === aulaActualId);
+            if (!aula) return;
+            
+            // Validación de seguridad
+            if (!SecurityUtils.validateName(title)) {
+                alert('❌ Título inválido. Debe tener entre 2 y 100 caracteres y no contener caracteres especiales.');
+                return;
+            }
+            
+            if (!SecurityUtils.validateMaterialUrl(url)) {
+                alert('❌ URL inválida o no permitida. Solo se permiten URLs de YouTube, Vimeo, Google Drive y servicios de documentos seguros.');
+                return;
+            }
+            
+            // Sanitizar entrada
+            title = SecurityUtils.sanitizeInput(title);
+            url = url.trim(); // No sanitizar URLs completamente para preservar funcionalidad
+            
+            if (id) {
+                let idx = aula.files.findIndex(f => f.id === id);
+                if (idx !== -1) {
+                    aula.files[idx].title = title;
+                    aula.files[idx].url = url;
+                    if (type) aula.files[idx].type = type;
+                }
+            } else {
+                aula.files.push({ id: generarId(), title, url, type: type || null });
+            }
+            guardarDatos();
+            renderizarArchivos();
+            cerrarModal('fileModal');
+        };
+        
+        async function eliminarArchivo(id) {
+            if (!confirm('¿Eliminar este material?')) return;
+            let aula = aulas.find(a => a.id === aulaActualId);
+            if (aula) {
+                aula.files = aula.files.filter(f => f.id !== id);
+                guardarDatos();
+                renderizarArchivos();
+            }
+        }
+        window.eliminarArchivo = eliminarArchivo;
+        
+        // ============ SEGUIMIENTO DE ESTUDIANTES (MEJORADO) ============
+        
+        function calcularTiempoTotalEstudiante(sessions) {
+            let totalMs = 0;
+            sessions.forEach(session => {
+                if (session.aulasVisited) {
+                    session.aulasVisited.forEach(visit => {
+                        if (visit.timeSpentMs) totalMs += visit.timeSpentMs;
+                        else if (visit.entryTime && visit.exitTime) {
+                            totalMs += new Date(visit.exitTime) - new Date(visit.entryTime);
+                        }
+                    });
+                }
+            });
+            return totalMs;
+        }
+        
+        function formatearTiempo(ms) {
+            if (!ms || ms < 0) return '0 segundos';
+            const segundos = Math.floor(ms / 1000);
+            const minutos = Math.floor(segundos / 60);
+            const horas = Math.floor(minutos / 60);
+            if (horas > 0) return `${horas}h ${minutos % 60}m ${segundos % 60}s`;
+            if (minutos > 0) return `${minutos}m ${segundos % 60}s`;
+            return `${segundos}s`;
+        }
+        
+        function renderizarProgreso() {
+            const estudiantes = Object.entries(progresoGeneral);
+            const filterEmail = document.getElementById('filterEmail')?.value.toLowerCase() || '';
+            const filterAulaId = document.getElementById('filterAula')?.value || '';
+            
+            let totalSesiones = 0;
+            estudiantes.forEach(([email, data]) => {
+                totalSesiones += (data.sessions?.length || 0);
+            });
+            document.getElementById('totalEstudiantes').innerText = estudiantes.length;
+            document.getElementById('totalSesiones').innerText = totalSesiones;
+            
+            let estudiantesFiltrados = estudiantes;
+            if (filterEmail) {
+                estudiantesFiltrados = estudiantesFiltrados.filter(([email]) => email.toLowerCase().includes(filterEmail));
+            }
+            
+            let html = '';
+            for (const [email, data] of estudiantesFiltrados) {
+                const sessions = data.sessions || [];
+                const totalMaterialesVistos = sessions.reduce((sum, s) => {
+                    return sum + (s.aulasVisited?.reduce((acc, v) => acc + (v.materialsViewed?.length || 0), 0) || 0);
+                }, 0);
+                const tiempoTotal = calcularTiempoTotalEstudiante(sessions);
+                
+                // Filtrar por aula si es necesario
+                let sessionsFiltradas = sessions;
+                if (filterAulaId) {
+                    sessionsFiltradas = sessions.filter(s => {
+                        return s.aulasVisited?.some(v => v.aulaId === filterAulaId);
+                    });
+                }
+                
+                const tieneDatosFiltrados = filterAulaId ? sessionsFiltradas.length > 0 : true;
+                if (!tieneDatosFiltrados) continue;
+                
+                html += `
+                    <div class="student-card" data-email="${escapar(email)}">
+                        <div class="student-header" onclick="window.toggleStudentDetails('${escapar(email).replace(/'/g, "\\'")}')">
                             <div>
-                                <span class="student-email">${track.studentEmail}</span>
+                                <span class="student-email">📧 ${escapar(email)}</span>
                                 <div class="student-stats">
-                                    <span>Sesiones: ${track.sessions?.length || 0}</span>
-                                    <span>Materiales interactuados: ${totalVistos}</span>
+                                    <span>🎓 ${sessions.length} sesiones</span>
+                                    <span>📄 ${totalMaterialesVistos} materiales vistos</span>
+                                    <span>⏱️ ${formatearTiempo(tiempoTotal)} en plataforma</span>
                                 </div>
                             </div>
-                            <div>
-                                <span class="student-badge">${porcentaje}% Progreso</span>
-                            </div>
+                            <span class="student-badge">${calcularProgresoPorcentaje(email)}% completado</span>
                         </div>
-                        <div class="student-details" id="details-${index}">
-                            <div class="progress-chart"><div class="progress-fill" style="width: ${porcentaje}%;"></div></div>
-                            <h4>Historial Detallado de Interacciones:</h4>
-                            ${renderSesiones(track.sessions)}
+                        <div class="student-details" id="details_${escapar(email).replace(/[^a-zA-Z0-9]/g, '_')}">
+                            ${renderizarSesionesEstudiante(sessionsFiltradas, filterAulaId)}
                         </div>
-                    </div>`;
+                    </div>
+                `;
+            }
+            
+            document.getElementById('progressList').innerHTML = html || '<p style="text-align:center;padding:40px;">📊 No hay estudiantes registrados aún</p>';
+        }
+        
+        function calcularProgresoPorcentaje(email) {
+            const data = progresoGeneral[email];
+            if (!data || !data.sessions) return 0;
+            
+            let materialesVistos = new Set();
+            data.sessions.forEach(session => {
+                session.aulasVisited?.forEach(visit => {
+                    visit.materialsViewed?.forEach(m => {
+                        materialesVistos.add(m.fileId);
+                    });
+                });
             });
+            
+            const totalMateriales = aulas.reduce((sum, aula) => sum + (aula.files?.length || 0), 0);
+            if (totalMateriales === 0) return 0;
+            return Math.round((materialesVistos.size / totalMateriales) * 100);
         }
-
-        function renderSesiones(sesiones) {
-            if (!sesiones || sesiones.length === 0) return '<p>Sin sesiones iniciadas.</p>';
-            return sesiones.map(s => {
-                const inicio = new Date(s.sessionStart).toLocaleString('es-VE');
-                const fin = s.sessionEnd ? new Date(s.sessionEnd).toLocaleString('es-VE') : 'Sesión Activa';
-                return `
-                    <div class="session-item">
-                        <div class="session-header"><span class="session-date">🗓️ Conexión: ${inicio}</span><span>Hasta: ${fin}</span></div>
-                        ${s.aulasVisited?.map(a => `
-                            <div class="aula-visit">
-                                📁 Aula ID visitada: <strong>${a.aulaId}</strong>
-                                ${a.materialsViewed?.map(m => `
-                                    <div class="material-view">👁️ Visto: ${m.title} (Permanencia: ${m.duration || 0} segs)</div>
-                                `).join('') || '<p style="margin-left:15px; font-size:0.75rem;">Ningún documento abierto.</p>'}
-                            </div>
-                        `).join('') || '<p style="font-size:0.75rem;">Sin navegación interna.</p>'}
-                    </div>`;
-            }).join('');
-        }
-
-        function toggleDetails(index) {
-            const el = document.getElementById(`details-${index}`);
-            el.classList.toggle('open');
-        }
-
-        function llenarFiltroAulas() {
-            const select = document.getElementById('filterAula');
-            aulasCache.forEach(a => {
-                select.innerHTML += `<option value="${a.$id}">${a.name}</option>`;
-            });
-        }
-
-        function filtrarEstudiantes() {
-            const emailValue = document.getElementById('filterEmail').value.toLowerCase();
-            const aulaValue = document.getElementById('filterAula').value;
-
-            trackingCache.forEach((track, index) => {
-                const matchesEmail = track.studentEmail.toLowerCase().includes(emailValue);
-                let matchesAula = true;
+        
+        function renderizarSesionesEstudiante(sessions, filterAulaId) {
+            if (!sessions || sessions.length === 0) {
+                return '<p style="text-align:center;padding:20px;color:#64748b;">📭 No hay sesiones registradas</p>';
+            }
+            
+            let html = '<h4 style="margin-bottom:16px;">📅 Historial de Sesiones</h4>';
+            
+            sessions.forEach((session, idx) => {
+                const fechaInicio = new Date(session.sessionStart).toLocaleString('es-ES');
+                const fechaFin = session.sessionEnd ? new Date(session.sessionEnd).toLocaleString('es-ES') : 'En curso';
+                const aulasVisitadas = session.aulasVisited || [];
                 
-                if (aulaValue) {
-                    matchesAula = track.sessions?.some(s => s.aulasVisited?.some(a => a.aulaId === aulaValue));
+                // Filtrar aulas si es necesario
+                let aulasFiltradas = aulasVisitadas;
+                if (filterAulaId) {
+                    aulasFiltradas = aulasVisitadas.filter(v => v.aulaId === filterAulaId);
                 }
-
-                const card = document.getElementById(`studentCard-${index}`);
-                if (card) {
-                    card.style.display = (matchesEmail && matchesAula) ? 'block' : 'none';
-                }
+                
+                html += `
+                    <div class="session-item">
+                        <div class="session-header">
+                            <span class="session-date">🕐 Sesión ${idx + 1}: ${fechaInicio}</span>
+                            <span>🏁 Fin: ${fechaFin}</span>
+                        </div>
+                        ${aulasFiltradas.map(visit => `
+                            <div class="aula-visit">
+                                <strong>📖 ${escapar(visit.aulaName || 'Aula sin nombre')}</strong>
+                                <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">
+                                    Entrada: ${new Date(visit.entryTime).toLocaleTimeString()} | 
+                                    Salida: ${visit.exitTime ? new Date(visit.exitTime).toLocaleTimeString() : 'En curso'} |
+                                    Duración: ${formatearTiempo(visit.timeSpentMs || (visit.exitTime ? new Date(visit.exitTime) - new Date(visit.entryTime) : 0))}
+                                </div>
+                                ${visit.materialsViewed && visit.materialsViewed.length > 0 ? `
+                                    <div style="margin-top:8px;">
+                                        <strong>📚 Materiales vistos (${visit.materialsViewed.length}):</strong>
+                                        ${visit.materialsViewed.map(m => `
+                                            <div class="material-view">
+                                                📄 ${escapar(m.fileTitle)} - Visto ${m.viewCount} vez/veces
+                                                <div style="font-size:0.7rem;">Primera vez: ${new Date(m.firstView).toLocaleString()}</div>
+                                                ${m.timeSpentMs ? `<div style="font-size:0.7rem;">Tiempo viendo: ${formatearTiempo(m.timeSpentMs)}</div>` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : '<div style="margin-top:8px; color:#94a3b8;">⚠️ No visualizó materiales en esta aula</div>'}
+                            </div>
+                        `).join('')}
+                        ${aulasFiltradas.length === 0 ? '<div style="color:#94a3b8; padding:12px;">⚠️ No hay registros de aulas en esta sesión</div>' : ''}
+                    </div>
+                `;
             });
+            
+            return html;
         }
-
+        
+        function toggleStudentDetails(emailId) {
+            const sanitizedId = 'details_' + emailId.replace(/[^a-zA-Z0-9]/g, '_');
+            const detailsDiv = document.getElementById(sanitizedId);
+            if (detailsDiv) {
+                detailsDiv.classList.toggle('open');
+            }
+        }
+        window.toggleStudentDetails = toggleStudentDetails;
+        
+        function filtrarEstudiantes() {
+            renderizarProgreso();
+        }
+        window.filtrarEstudiantes = filtrarEstudiantes;
+        
         function limpiarFiltros() {
             document.getElementById('filterEmail').value = '';
             document.getElementById('filterAula').value = '';
-            filtrarEstudiantes();
+            renderizarProgreso();
         }
-
+        window.limpiarFiltros = limpiarFiltros;
+        
         function exportarDatos() {
-            let csv = 'Email Estudiante,Total Sesiones,Materiales Vistos,Porcentaje Progreso\n';
-            trackingCache.forEach(track => {
-                const totalVistos = track.sessions?.reduce((sum, s) => sum + (s.aulasVisited?.reduce((acc, v) => acc + (v.materialsViewed?.length || 0), 0) || 0), 0) || 0;
-                const porcentaje = Math.min(Math.round((totalVistos / (filesCache.length || 1)) * 100), 100);
-                csv += `"${track.studentEmail}",${track.sessions?.length || 0},${totalVistos},${porcentaje}%\n`;
-            });
+            let csv = "Estudiante,Sesiones,Total Materiales Vistos,Tiempo Total (minutos),Progreso (%)\n";
+            
+            for (const [email, data] of Object.entries(progresoGeneral)) {
+                const sessions = data.sessions || [];
+                const totalMaterialesVistos = sessions.reduce((sum, s) => {
+                    return sum + (s.aulasVisited?.reduce((acc, v) => acc + (v.materialsViewed?.length || 0), 0) || 0);
+                }, 0);
+                const tiempoTotalMs = calcularTiempoTotalEstudiante(sessions);
+                const tiempoTotalMin = (tiempoTotalMs / 60000).toFixed(2);
+                const progreso = calcularProgresoPorcentaje(email);
+                
+                csv += `"${email}",${sessions.length},${totalMaterialesVistos},${tiempoTotalMin},${progreso}\n`;
+            }
+            
             const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", "reporte_auditoria_aula.csv");
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute("download", "reporte_estudiantes.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
-
+        window.exportarDatos = exportarDatos;
+        
         function logout() {
-            account.deleteSession('current').then(() => {
-                window.location.href = 'index.html';
-            }).catch(() => {
-                window.location.href = 'index.html';
-            });
+            sessionStorage.clear();
+            localStorage.removeItem('studentEmail');
+            window.location.href = 'index.html';
         }
-
-        setInterval(() => {
-            document.getElementById('realTimeClock').innerText = new Date().toLocaleTimeString('es-VE');
-        }, 1000);
-
-        window.onload = inicializarDatos;
+        window.logout = logout;
+        
+        // Inicialización
+        inicializarDatos();
+        renderizarProgreso();
+        setTimeout(() => document.getElementById('initialLoader').style.display = 'none', 800);
     </script>
 </body>
 </html>
