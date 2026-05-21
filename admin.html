@@ -389,6 +389,11 @@
     <div class="container">
         <div class="stats">
             <div class="stat-card">
+                <button class="btn-primary" style="width:100%; margin-bottom:10px; background: #059669;" onclick="window.exportarAulasJSON()">💾 Descargar aulas.json</button>
+                <button class="btn-outline" style="width:100%; font-size: 11px;" onclick="window.exportarMemoriaJSON()">💾 Descargar memoria.json</button>
+                <div class="stat-label">Sincronización con GitHub</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-number" id="totalAulas">0</div>
                 <div class="stat-label">Total Aulas</div>
             </div>
@@ -399,14 +404,6 @@
             <div class="stat-card">
                 <div class="stat-number" id="totalEstudiantes">0</div>
                 <div class="stat-label">Estudiantes Registrados</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalSesiones">0</div>
-                <div class="stat-label">Sesiones Totales</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalMemoria">0</div>
-                <div class="stat-label">Enlaces Memoria</div>
             </div>
         </div>
         
@@ -718,6 +715,30 @@
             }
         }
         
+        // ============ SISTEMA DE EXPORTACIÓN (MEMORIA DE INTERCAMBIO) ============
+        function exportarAulasJSON() {
+            const dataStr = JSON.stringify(aulas, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "aulas.json";
+            link.click();
+            alert("✅ Archivo 'aulas.json' descargado. Ahora súbelo a tu repositorio de GitHub para que los estudiantes vean los cambios.");
+        }
+        window.exportarAulasJSON = exportarAulasJSON;
+
+        function exportarMemoriaJSON() {
+            const dataStr = JSON.stringify(memoriaItems, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "memoria.json";
+            link.click();
+        }
+        window.exportarMemoriaJSON = exportarMemoriaJSON;
+
         // ============ SISTEMA DE VISTA PREVIA ============
         function getGoogleDriveId(url) {
             const patterns = [/\/file\/d\/([a-zA-Z0-9_-]+)/, /id=([a-zA-Z0-9_-]+)/, /\/d\/([a-zA-Z0-9_-]+)/];
@@ -810,7 +831,7 @@
         function eliminarMemoria(id) {
             if (!confirm('¿Eliminar este enlace de memoria?')) return;
             showLoader();
-            memoriaItems = memoriaItems.filter(i => (i.id || i) !== id);
+            memoriaItems = memoriaItems.filter(i => (i.id || i.url || i) !== id);
             renderizarMemoria();
             hideLoader();
         }
@@ -830,8 +851,9 @@
                     alert('❌ Error: Se detectaron datos corruptos. Por favor, contacte al administrador.');
                     return false;
                 }
-                
+                // Guardamos en local para la sesión actual del admin
                 localStorage.setItem('aulas_onapc', JSON.stringify(aulas));
+                console.info('Cambios guardados localmente. Recuerde descargar el JSON para actualizar GitHub.');
                 return true;
             } catch (e) {
                 console.error('Error guardando datos:', e);
